@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Hardhat
+artifacts/
+cache/
+typechain-types/
+next-env.d.ts

@@ -1,0 +1,10 @@
+{
+  "network": "Somnia Dream Testnet",
+  "chainId": 50312,
+  "rpcUrl": "https://dream-rpc.somnia.network",
+  "contractAddress": "0x92F1Cab66699B0f3C00EFE712fec4851BCD7feE6",
+  "deployerAddress": "0xBb427E07f94d1d333F6e2E23e3DcfF91A10A822a",
+  "explorerUrl": "https://explorer.somnia.network/address/0x92F1Cab66699B0f3C00EFE712fec4851BCD7feE6",
+  "deployedAt": "2025-11-10"
+}
+
