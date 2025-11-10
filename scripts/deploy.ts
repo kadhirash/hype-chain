@@ -19,7 +19,7 @@ async function main() {
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("Account balance:", ethers.formatEther(balance), "STT\n");
 
-  if (balance === 0n) {
+  if (balance === BigInt(0)) {
     console.error("ERROR: Account has no balance!");
     console.log("Get testnet tokens from: https://faucet.somnia.network");
     process.exit(1);
