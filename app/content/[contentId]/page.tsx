@@ -19,6 +19,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const [imageLoaded, setImageLoaded] = useState(false);
   const [revenueAmount, setRevenueAmount] = useState('');
   const [addingRevenue, setAddingRevenue] = useState(false);
+  const [deletingShareId, setDeletingShareId] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(p => {
@@ -148,6 +149,33 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     }
   };
 
+  const handleDeleteShare = async (shareId: string) => {
+    try {
+      const response = await fetch(`/api/shares/${shareId}/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet_address: address,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete share');
+        return;
+      }
+
+      alert('Share deleted successfully. The viral chain structure is preserved.');
+      setDeletingShareId(null);
+      
+      // Reload content and tree to show updated state
+      await loadContent(contentId);
+    } catch (err) {
+      alert('Failed to delete share. Please try again.');
+      setDeletingShareId(null);
+    }
+  };
+
   const isImageUrl = (url: string) => {
     if (!url) return false;
     // Check if URL ends with common image extensions or is from image hosting sites
@@ -165,15 +193,53 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
               👤
             </div>
           )}
-          <div className="flex-1 bg-white/10 rounded-lg p-3 border border-cyan-500/20 transition-all duration-300 group-hover/parentcard:border-cyan-500/60 group-hover/parentcard:bg-white/20 group-hover/parentcard:shadow-lg group-hover/parentcard:shadow-cyan-500/30">
-            <p className="text-white font-mono text-sm truncate">
-              {node.wallet_address}
-            </p>
+          <div className={`flex-1 rounded-lg p-3 border transition-all duration-300 ${
+            node.is_deleted
+              ? 'bg-red-900/20 border-red-500/40 opacity-60'
+              : 'bg-white/10 border-cyan-500/20 group-hover/parentcard:border-cyan-500/60 group-hover/parentcard:bg-white/20 group-hover/parentcard:shadow-lg group-hover/parentcard:shadow-cyan-500/30'
+          }`}>
+            <div className="flex items-center justify-between">
+              <p className={`font-mono text-sm truncate ${node.is_deleted ? 'text-gray-500 line-through' : 'text-white'}`}>
+                {node.is_deleted ? '[Deleted]' : node.wallet_address}
+              </p>
+              {node.is_deleted && (
+                <span className="text-xs text-red-400 font-semibold px-2 py-0.5 bg-red-500/20 rounded">
+                  Deleted
+                </span>
+              )}
+            </div>
             <div className="flex gap-4 text-sm text-gray-400 mt-1">
               <span>Depth: {node.share_depth}</span>
               <span>Clicks: {node.click_count}</span>
               <span>Earnings: {formatNumber(node.earnings_lamports)} lamports</span>
             </div>
+            {!node.is_deleted && isConnected && address && node.wallet_address.toLowerCase() === address.toLowerCase() && (
+              <div className="mt-2 flex gap-2">
+                {deletingShareId === node.id ? (
+                  <>
+                    <button
+                      onClick={() => handleDeleteShare(node.id)}
+                      className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition"
+                    >
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => setDeletingShareId(null)}
+                      className="px-3 py-1 text-xs bg-gray-500/20 hover:bg-gray-500/30 text-gray-300 rounded border border-gray-500/40 transition"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setDeletingShareId(node.id)}
+                    className="px-3 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded border border-red-500/40 transition"
+                  >
+                    Delete My Share
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         {node.children && node.children.length > 0 && (
