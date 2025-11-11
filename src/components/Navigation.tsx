@@ -2,12 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useWallet } from '@/src/contexts/WalletContext';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { address, isConnected, connect, disconnect } = useWallet();
 
   const isActive = (path: string) => {
     return pathname === path;
+  };
+
+  const truncateAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
   return (
@@ -43,6 +49,28 @@ export default function Navigation() {
             >
               Create
             </Link>
+
+            {/* Wallet Connection */}
+            {isConnected && address ? (
+              <div className="flex items-center gap-2">
+                <div className="px-4 py-2 bg-white/10 rounded-lg border border-cyan-500/30 text-cyan-300 font-mono text-sm">
+                  {truncateAddress(address)}
+                </div>
+                <button
+                  onClick={disconnect}
+                  className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-gray-300 hover:text-white hover:bg-red-500/20 border border-red-500/30"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={connect}
+                className="px-5 py-2 rounded-lg font-bold transition-all duration-200 bg-white/10 hover:bg-white/20 text-white border border-cyan-500/30 hover:border-cyan-500/60"
+              >
+                Connect Wallet
+              </button>
+            )}
           </div>
         </div>
       </div>

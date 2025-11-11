@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useWallet } from '@/src/contexts/WalletContext';
 
 export default function ContentDetailPage({ params }: { params: Promise<{ contentId: string }> }) {
+  const { address, isConnected, connect } = useWallet();
   const [contentId, setContentId] = useState<string>('');
   const [content, setContent] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
@@ -22,6 +24,13 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       loadContent(p.contentId);
     });
   }, [params]);
+
+  // Auto-fill wallet address when connected
+  useEffect(() => {
+    if (isConnected && address) {
+      setWalletAddress(address);
+    }
+  }, [isConnected, address]);
 
   const loadContent = async (id: string) => {
     try {
@@ -335,22 +344,40 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
               {/* Get Personalized Link */}
               <div className="bg-black/30 rounded-xl p-4">
                 <p className="text-gray-400 text-sm mb-2">Get Your Personalized Link</p>
-                <p className="text-gray-500 text-xs mb-3">Enter your wallet to track earnings from your shares</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
-                    placeholder="0x..."
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                  <button
-                    onClick={handleCreateShare}
-                    disabled={creating}
-                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-semibold transition"
-                  >
-                    {creating ? 'Creating...' : 'Get Link'}
-                  </button>
+                <p className="text-gray-500 text-xs mb-3">
+                  {isConnected && address ? 'Using connected wallet' : 'Enter your wallet to track earnings from your shares'}
+                </p>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={walletAddress}
+                      onChange={(e) => setWalletAddress(e.target.value)}
+                      placeholder="0x..."
+                      readOnly={isConnected && !!address}
+                      className={`flex-1 px-4 py-2 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
+                        isConnected && address
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 cursor-not-allowed'
+                          : 'bg-white/10 border-white/20 focus:ring-2 focus:ring-green-500'
+                      }`}
+                    />
+                    <button
+                      onClick={handleCreateShare}
+                      disabled={creating}
+                      className="px-6 py-2 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-semibold transition"
+                    >
+                      {creating ? 'Creating...' : 'Get Link'}
+                    </button>
+                  </div>
+                  {!isConnected && !address && (
+                    <button
+                      type="button"
+                      onClick={connect}
+                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30 text-sm"
+                    >
+                      Connect Wallet to Auto-Fill
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

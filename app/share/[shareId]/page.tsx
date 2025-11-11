@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useWallet } from '@/src/contexts/WalletContext';
 
 export default function SharePage({ params }: { params: Promise<{ shareId: string }> }) {
+  const { address, isConnected, connect } = useWallet();
   const [shareId, setShareId] = useState<string>('');
   const [content, setContent] = useState<any>(null);
   const [share, setShare] = useState<any>(null);
@@ -19,6 +21,13 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
       loadShareData(p.shareId);
     });
   }, [params]);
+
+  // Auto-fill wallet address when connected
+  useEffect(() => {
+    if (isConnected && address) {
+      setWalletAddress(address);
+    }
+  }, [isConnected, address]);
 
   const loadShareData = async (id: string) => {
     try {
@@ -114,17 +123,38 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
                 <label htmlFor="wallet" className="block text-white font-semibold mb-2">
                   Your Wallet Address *
                 </label>
-                <input
-                  type="text"
-                  id="wallet"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="0x..."
-                />
-                <p className="text-gray-400 text-sm mt-2">
-                  You'll earn rewards when people share from your link
-                </p>
+                {isConnected && address ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      id="wallet"
+                      value={walletAddress}
+                      readOnly
+                      className="w-full px-4 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono focus:outline-none cursor-not-allowed"
+                    />
+                    <p className="text-cyan-400 text-sm">
+                      ✓ Using connected wallet address
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      id="wallet"
+                      value={walletAddress}
+                      onChange={(e) => setWalletAddress(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      placeholder="0x... or connect your wallet"
+                    />
+                    <button
+                      type="button"
+                      onClick={connect}
+                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
+                    >
+                      Connect Wallet to Auto-Fill
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button

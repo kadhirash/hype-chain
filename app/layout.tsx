@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Navigation from '@/src/components/Navigation'
+import { WalletProvider } from '@/src/contexts/WalletContext'
 
 export const metadata: Metadata = {
   title: 'HypeChain - Proof-of-Hype Viral Tracking',
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navigation />
-        {children}
+        <WalletProvider>
+          <Navigation />
+          {children}
+        </WalletProvider>
       </body>
     </html>
   )
