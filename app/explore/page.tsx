@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import LiveFeed from '@/src/components/LiveFeed';
 
 export default function ExplorePage() {
   const [content, setContent] = useState<any[]>([]);
@@ -75,8 +76,17 @@ export default function ExplorePage() {
             </Link>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {content.map((item) => (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Live Feed Sidebar */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="lg:sticky lg:top-4">
+                <LiveFeed />
+              </div>
+            </div>
+
+            {/* Content Grid */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {content.map((item) => (
               <Link
                 key={item.id}
                 href={`/content/${item.id}`}
@@ -143,7 +153,8 @@ export default function ExplorePage() {
                   )}
                 </div>
               </Link>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
