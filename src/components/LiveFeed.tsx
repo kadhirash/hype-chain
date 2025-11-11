@@ -17,6 +17,7 @@ type Activity = {
 export default function LiveFeed() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const loadActivities = async () => {
     try {
@@ -25,6 +26,7 @@ export default function LiveFeed() {
       
       const data = await response.json();
       setActivities(data.activities || []);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to load activities:', err);
     } finally {
@@ -38,6 +40,15 @@ export default function LiveFeed() {
     // Poll for new activities every 5 seconds
     const interval = setInterval(loadActivities, 5000);
     
+    return () => clearInterval(interval);
+  }, []);
+
+  // Force re-render every second to update counter
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -58,6 +69,21 @@ export default function LiveFeed() {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
+  const getLastUpdatedTime = () => {
+    return lastUpdated.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+  };
+
+  const getTimeSinceUpdate = () => {
+    // Use tick to force re-render every second
+    const _ = tick;
+    const seconds = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+    return seconds;
+  };
+
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
@@ -74,14 +100,26 @@ export default function LiveFeed() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-          <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+    <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20" data-tick={tick}>
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="relative">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+          </div>
+          <h3 className="text-xl font-bold text-white">Live Activity</h3>
         </div>
-        <h3 className="text-xl font-bold text-white">Live Activity</h3>
-        <span className="ml-auto text-xs text-gray-400">Powered by Somnia Data Streams</span>
+        <div className="flex items-center justify-between text-xs text-gray-400">
+          <span>Powered by Somnia Data Streams</span>
+          <span className="font-mono text-cyan-400">
+            Updated: {lastUpdated.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit',
+              timeZoneName: 'short'
+            })} ({Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago)
+          </span>
+        </div>
       </div>
 
       {activities.length === 0 ? (
