@@ -3,10 +3,10 @@ import { describe, it, expect } from 'vitest';
 const BASE_URL = 'http://localhost:3000';
 
 describe('Delete Share API', () => {
-  describe('POST /api/shares/:shareId/delete', () => {
+  describe('POST /api/share/:shareId/delete', () => {
     describe('Invalid Inputs', () => {
       it('should reject missing wallet_address', async () => {
-        const response = await fetch(`${BASE_URL}/api/shares/test-share-id/delete`, {
+        const response = await fetch(`${BASE_URL}/api/share/test-share-id/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({}),
@@ -18,7 +18,7 @@ describe('Delete Share API', () => {
       });
 
       it('should return 404 for non-existent share', async () => {
-        const response = await fetch(`${BASE_URL}/api/shares/non-existent-share-id-12345/delete`, {
+        const response = await fetch(`${BASE_URL}/api/share/non-existent-share-id-12345/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

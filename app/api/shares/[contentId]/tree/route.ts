@@ -104,10 +104,17 @@ export async function GET(
       shareCount: count,
     }));
 
+    // Calculate deleted share statistics
+    const deletedShares = shares.filter(s => s.is_deleted);
+    const deletedCount = deletedShares.length;
+    const activeCount = shares.length - deletedCount;
+
     return NextResponse.json({
       contentId,
       tree,
       totalShares: shares.length,
+      activeShares: activeCount,
+      deletedShares: deletedCount,
       maxDepth,
       levelStats,
       creatorShare: tree[0] || null,

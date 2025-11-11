@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
     const { data: content, error } = await supabase
       .from('content')
       .select('*')
+      .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -108,9 +109,16 @@ export async function GET(request: NextRequest) {
           .select('*', { count: 'exact', head: true })
           .eq('content_id', item.id)
 
+        const { count: deletedCount } = await supabase
+          .from('shares')
+          .select('*', { count: 'exact', head: true })
+          .eq('content_id', item.id)
+          .eq('is_deleted', true)
+
         return {
           ...item,
           total_shares: shareCount || 0,
+          deleted_shares: deletedCount || 0,
         }
       })
     )

@@ -50,7 +50,11 @@ export async function POST(
     // Soft delete the share (mark as deleted, keep in database)
     const { error: updateError } = await supabase
       .from('shares')
-      .update({ is_deleted: true })
+      .update({ 
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        deleted_by: wallet_address,
+      })
       .eq('id', shareId);
 
     if (updateError) {

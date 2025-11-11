@@ -20,6 +20,10 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const [revenueAmount, setRevenueAmount] = useState('');
   const [addingRevenue, setAddingRevenue] = useState(false);
   const [deletingShareId, setDeletingShareId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [deletingContent, setDeletingContent] = useState(false);
+  const [confirmDeleteContent, setConfirmDeleteContent] = useState(false);
 
   useEffect(() => {
     params.then(p => {
@@ -150,8 +154,11 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   };
 
   const handleDeleteShare = async (shareId: string) => {
+    setDeleting(true);
+    setDeleteMessage(null);
+    
     try {
-      const response = await fetch(`/api/shares/${shareId}/delete`, {
+      const response = await fetch(`/api/share/${shareId}/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -159,20 +166,62 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
-        alert(data.error || 'Failed to delete share');
+        setDeleteMessage({ type: 'error', text: data.error || 'Failed to delete share' });
         return;
       }
 
-      alert('Share deleted successfully. The viral chain structure is preserved.');
+      setDeleteMessage({ type: 'success', text: 'Share deleted successfully! The viral chain structure is preserved.' });
       setDeletingShareId(null);
       
       // Reload content and tree to show updated state
       await loadContent(contentId);
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setDeleteMessage(null), 5000);
     } catch (err) {
-      alert('Failed to delete share. Please try again.');
-      setDeletingShareId(null);
+      setDeleteMessage({ type: 'error', text: 'Failed to delete share. Please try again.' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteContent = async () => {
+    setDeletingContent(true);
+    setDeleteMessage(null);
+    
+    try {
+      const response = await fetch(`/api/content/${contentId}/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet_address: address,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDeleteMessage({ type: 'error', text: data.error || 'Failed to delete content' });
+        return;
+      }
+
+      setDeleteMessage({ 
+        type: 'success', 
+        text: 'Content deleted successfully! Redirecting to explore page...' 
+      });
+      setConfirmDeleteContent(false);
+      
+      // Redirect to explore page after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/explore';
+      }, 2000);
+    } catch (err) {
+      setDeleteMessage({ type: 'error', text: 'Failed to delete content. Please try again.' });
+    } finally {
+      setDeletingContent(false);
     }
   };
 
@@ -208,6 +257,11 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                 </span>
               )}
             </div>
+            {node.is_deleted && node.deleted_at && (
+              <p className="text-xs text-red-400/70 mt-1">
+                Deleted: {new Date(node.deleted_at).toLocaleString()}
+              </p>
+            )}
             <div className="flex gap-4 text-sm text-gray-400 mt-1">
               <span>Depth: {node.share_depth}</span>
               <span>Clicks: {node.click_count}</span>
@@ -219,13 +273,15 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                   <>
                     <button
                       onClick={() => handleDeleteShare(node.id)}
-                      className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition"
+                      disabled={deleting}
+                      className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 disabled:cursor-not-allowed text-white rounded font-semibold transition"
                     >
-                      Confirm Delete
+                      {deleting ? 'Deleting...' : 'Confirm Delete'}
                     </button>
                     <button
                       onClick={() => setDeletingShareId(null)}
-                      className="px-3 py-1 text-xs bg-gray-500/20 hover:bg-gray-500/30 text-gray-300 rounded border border-gray-500/40 transition"
+                      disabled={deleting}
+                      className="px-3 py-1 text-xs bg-gray-500/20 hover:bg-gray-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 rounded border border-gray-500/40 transition"
                     >
                       Cancel
                     </button>
@@ -338,6 +394,23 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
           </Link>
         </div>
 
+        {/* Delete Message Toast */}
+        {deleteMessage && (
+          <div className={`mb-6 rounded-xl p-4 border ${
+            deleteMessage.type === 'success' 
+              ? 'bg-green-500/20 border-green-500/50 text-green-200' 
+              : 'bg-red-500/20 border-red-500/50 text-red-200'
+          } flex items-center justify-between`}>
+            <span>{deleteMessage.text}</span>
+            <button 
+              onClick={() => setDeleteMessage(null)}
+              className="ml-4 text-gray-300 hover:text-white transition"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Content Header */}
         <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-3xl overflow-hidden border border-cyan-500/20 mb-6">
           {/* Try to load image in background */}
@@ -389,18 +462,22 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
           <div className="p-8">
             
-            <div className="grid md:grid-cols-4 gap-6 mb-6">
+            <div className="grid md:grid-cols-5 gap-6 mb-6">
             <div className="bg-black/30 rounded-xl p-4">
               <p className="text-gray-400 text-sm mb-1">Total Shares</p>
               <p className="text-3xl font-bold text-cyan-400">{stats?.shares || 0}</p>
             </div>
             <div className="bg-black/30 rounded-xl p-4">
-              <p className="text-gray-400 text-sm mb-1">Engagements</p>
-              <p className="text-3xl font-bold text-blue-400">{stats?.engagements || 0}</p>
+              <p className="text-gray-400 text-sm mb-1">Active Shares</p>
+              <p className="text-3xl font-bold text-green-400">{tree?.activeShares || 0}</p>
+            </div>
+            <div className="bg-black/30 rounded-xl p-4">
+              <p className="text-gray-400 text-sm mb-1">Deleted Shares</p>
+              <p className="text-3xl font-bold text-red-400">{tree?.deletedShares || 0}</p>
             </div>
             <div className="bg-black/30 rounded-xl p-4">
               <p className="text-gray-400 text-sm mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-green-400">{formatNumber(content?.total_revenue_lamports || 0)}</p>
+              <p className="text-3xl font-bold text-yellow-400">{formatNumber(content?.total_revenue_lamports || 0)}</p>
               <p className="text-xs text-gray-500">lamports</p>
             </div>
             <div className="bg-black/30 rounded-xl p-4">
@@ -449,6 +526,74 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
               <p className="text-gray-400 text-sm mt-2">
                 Revenue will be split proportionally across all sharers, with earlier sharers earning more.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Content Section (Creator Only) */}
+        {isConnected && address && content?.creator_wallet?.toLowerCase() === address.toLowerCase() && (
+          <div className="bg-gradient-to-br from-red-900/30 to-orange-900/20 backdrop-blur-xl rounded-3xl p-8 border border-red-500/20 mb-6">
+            <h2 className="text-3xl font-bold text-white mb-4">Delete Content</h2>
+            <p className="text-gray-300 mb-6">
+              {tree?.activeShares > 0 ? (
+                <>
+                  Cannot delete content while active shares exist. {tree.activeShares} sharer{tree.activeShares !== 1 ? 's are' : ' is'} still active and can earn revenue.
+                  {tree?.deletedShares > 0 && (
+                    <span className="block text-yellow-400 mt-2">
+                      {tree.deletedShares} share{tree.deletedShares !== 1 ? 's are' : ' is'} deleted, but active shares remain.
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  All shares have been deleted. You can now remove this content from the explore page.
+                  <span className="block text-yellow-400 mt-2">
+                    This action cannot be undone.
+                  </span>
+                </>
+              )}
+            </p>
+            
+            <div className="bg-black/30 rounded-xl p-6">
+              {tree?.activeShares > 0 ? (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <p className="text-yellow-200 text-sm">
+                    💡 You must delete all shares first before you can delete this content. This protects active sharers who deserve to earn revenue.
+                  </p>
+                </div>
+              ) : !confirmDeleteContent ? (
+                <button
+                  onClick={() => setConfirmDeleteContent(true)}
+                  className="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg border border-red-500/40 font-semibold transition"
+                >
+                  Delete This Content
+                </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <p className="text-red-200 font-semibold">⚠️ Are you sure?</p>
+                    <p className="text-red-300 text-sm mt-1">
+                      This content will be removed from the explore page. The viral chain data will be preserved for analytics.
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleDeleteContent}
+                      disabled={deletingContent}
+                      className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition"
+                    >
+                      {deletingContent ? 'Deleting...' : 'Yes, Delete Content'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteContent(false)}
+                      disabled={deletingContent}
+                      className="px-6 py-3 bg-gray-500/20 hover:bg-gray-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 rounded-lg border border-gray-500/40 transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
