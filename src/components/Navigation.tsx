@@ -28,10 +28,10 @@ export default function Navigation() {
           </Link>
 
           {/* Navigation Links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-8">
             <Link
               href="/explore"
-              className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+              className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
                 isActive('/explore')
                   ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -41,7 +41,7 @@ export default function Navigation() {
             </Link>
             <Link
               href="/create"
-              className={`px-5 py-2 rounded-lg font-bold transition-all duration-200 ${
+              className={`px-6 py-2.5 rounded-lg font-bold transition-all duration-200 ${
                 isActive('/create')
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/50'
                   : 'bg-gradient-to-r from-cyan-500/80 to-blue-600/80 text-white hover:from-cyan-500 hover:to-blue-600 hover:scale-105'
@@ -52,13 +52,13 @@ export default function Navigation() {
 
             {/* Wallet Connection */}
             {isConnected && address ? (
-              <div className="flex items-center gap-2">
-                <div className="px-4 py-2 bg-white/10 rounded-lg border border-cyan-500/30 text-cyan-300 font-mono text-sm">
+              <div className="flex items-center gap-4">
+                <div className="px-5 py-2.5 bg-white/10 rounded-lg border border-cyan-500/30 text-cyan-300 font-mono text-sm">
                   {truncateAddress(address)}
                 </div>
                 <button
                   onClick={disconnect}
-                  className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-gray-300 hover:text-white hover:bg-red-500/20 border border-red-500/30"
+                  className="px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 text-gray-300 hover:text-white hover:bg-red-500/20 border border-red-500/30"
                 >
                   Disconnect
                 </button>
@@ -66,7 +66,7 @@ export default function Navigation() {
             ) : (
               <button
                 onClick={connect}
-                className="px-5 py-2 rounded-lg font-bold transition-all duration-200 bg-white/10 hover:bg-white/20 text-white border border-cyan-500/30 hover:border-cyan-500/60"
+                className="px-8 py-3 rounded-lg font-bold transition-all duration-200 bg-white/10 hover:bg-white/20 text-white border border-cyan-500/30 hover:border-cyan-500/60"
               >
                 Connect Wallet
               </button>

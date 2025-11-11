@@ -618,11 +618,11 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                     type="text"
                     readOnly
                     value={typeof window !== 'undefined' ? window.location.href : ''}
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
                   />
                   <button
                     onClick={handleCopyPageUrl}
-                    className="px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition"
+                    className="px-6 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition"
                   >
                     Copy
                   </button>
@@ -643,7 +643,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                       onChange={(e) => setWalletAddress(e.target.value)}
                       placeholder="0x..."
                       readOnly={isConnected && !!address}
-                      className={`flex-1 px-4 py-2 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
+                      className={`flex-1 px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
                         isConnected && address
                           ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 cursor-not-allowed'
                           : 'bg-white/10 border-white/20 focus:ring-2 focus:ring-green-500'
@@ -652,7 +652,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                     <button
                       onClick={handleCreateShare}
                       disabled={creating}
-                      className="px-6 py-2 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-semibold transition"
+                      className="px-8 py-2.5 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-semibold transition"
                     >
                       {creating ? 'Creating...' : 'Get Link'}
                     </button>
@@ -661,7 +661,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                     <button
                       type="button"
                       onClick={connect}
-                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30 text-sm"
+                      className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30 text-sm"
                     >
                       Connect Wallet to Auto-Fill
                     </button>
@@ -685,11 +685,11 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                     type="text"
                     readOnly
                     value={newShare.share_url}
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
                   />
                   <button
                     onClick={handleCopyShareLink}
-                    className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
+                    className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
                   >
                     Copy
                   </button>

@@ -149,7 +149,7 @@ export default function CreateContentPage() {
                     <button
                       type="button"
                       onClick={connect}
-                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
+                      className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
                     >
                       Connect Wallet to Auto-Fill
                     </button>
@@ -227,13 +227,13 @@ export default function CreateContentPage() {
                   setResult(null);
                   setFormData({ title: '', mediaUrl: '', walletAddress: '' });
                 }}
-                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
+                className="flex-1 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
               >
                 Create Another
               </button>
               <Link
                 href={`/content/${result.content.id}`}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold transition text-center"
+                className="flex-1 px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-semibold transition text-center"
               >
                 View Content
               </Link>
