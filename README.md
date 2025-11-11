@@ -131,8 +131,11 @@ cd hype-chain
 npm install
 
 # Set up environment variables
-cp .env.local.example .env.local
-# Add your Supabase credentials and Somnia RPC URL
+# Create .env.local with:
+# NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+# SOMNIA_RPC_URL=https://dream-rpc.somnia.network
+# PRIVATE_KEY=your-wallet-private-key
 ```
 
 ### Database Setup
@@ -144,8 +147,14 @@ cp .env.local.example .env.local
    - `src/database/migrations/002_add_deletion_tracking.sql`
    - `src/database/migrations/003_add_content_deletion.sql`
 
-### Smart Contract Deployment
+### Smart Contract
 
+HypeChain contract is deployed on **Somnia Dream Testnet**:
+- **Contract Address**: `0x92F1Cab66699B0f3C00EFE712fec4851BCD7feE6`
+- **Network**: Somnia Dream Testnet
+- **Chain ID**: 50312
+
+To deploy your own instance:
 ```bash
 # Compile contracts
 npx hardhat compile
@@ -176,11 +185,11 @@ npx hardhat test
 ## How It Works
 
 1. **Create Content** - Upload your content with title, media URL, and wallet address
-2. **Share Links** - Get a personalized share link with your wallet embedded
-3. **Viral Tracking** - Each share creates a new node in the viral tree
-4. **Engagement Recording** - Views and clicks are tracked on-chain
-5. **Revenue Distribution** - Creator adds revenue, system distributes automatically
-6. **Live Analytics** - Watch your viral chain grow in real-time
+2. **Get Share Link** - Receive a personalized share link with your wallet embedded
+3. **Viral Tracking** - Each share creates a new node in the viral attribution tree
+4. **Engagement Recording** - Views and clicks are tracked in real-time
+5. **Revenue Distribution** - Creator adds revenue (lamports), system distributes automatically using exponential decay
+6. **Live Analytics** - Watch your viral chain grow with the real-time activity feed powered by Somnia Data Streams
 
 ## Future Improvements
 
@@ -190,6 +199,16 @@ npx hardhat test
 - **Analytics Dashboard** - Detailed metrics per wallet
 - **Mobile App** - React Native app with push notifications
 - **Multi-chain** - Expand beyond Somnia to other EVM chains
+
+## Live Demo
+
+**🚀 Live Site:** https://hype-chain.vercel.app/
+
+Try it out:
+- Connect your MetaMask/Phantom wallet
+- Create viral content and share it
+- Watch the real-time activity feed update
+- See the animated viral tree in action
 
 ## Demo Video
 
