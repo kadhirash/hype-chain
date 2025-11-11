@@ -100,7 +100,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ content, count: content.length })
+    // Get actual share counts for each content
+    const contentWithCounts = await Promise.all(
+      (content || []).map(async (item) => {
+        const { count: shareCount } = await supabase
+          .from('shares')
+          .select('*', { count: 'exact', head: true })
+          .eq('content_id', item.id)
+
+        return {
+          ...item,
+          total_shares: shareCount || 0,
+        }
+      })
+    )
+
+    return NextResponse.json({ content: contentWithCounts, count: contentWithCounts.length })
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(
