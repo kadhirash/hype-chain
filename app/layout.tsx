@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navigation from '@/components/Navigation'
+import Navigation from '@/src/components/Navigation'
 
 export const metadata: Metadata = {
   title: 'HypeChain - Proof-of-Hype Viral Tracking',

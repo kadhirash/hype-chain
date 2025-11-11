@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/src/lib/supabase';
 
 // Build hierarchical tree structure from flat shares data
 function buildViralTree(shares: any[]) {

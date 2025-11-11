@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getContentEventHistory } from '@/lib/dataStreams';
+import { getContentEventHistory } from '@/src/lib/dataStreams';
 
 export async function GET(
   req: NextRequest,

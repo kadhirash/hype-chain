@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/src/lib/supabase'
 
 // POST /api/engagements - Track engagement (view, click, share)
 export async function POST(request: NextRequest) {
