@@ -149,7 +149,7 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
                     <button
                       type="button"
                       onClick={connect}
-                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
+                      className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
                     >
                       Connect Wallet to Auto-Fill
                     </button>
@@ -205,14 +205,14 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
           {share?.content_id && (
             <Link
               href={`/content/${share.content_id}`}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition"
+              className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition"
             >
               View Viral Tree 📊
             </Link>
           )}
           <Link
             href="/create"
-            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
+            className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
           >
             Create Your Own
           </Link>
