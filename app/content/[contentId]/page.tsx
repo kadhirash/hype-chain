@@ -17,6 +17,8 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const [newShare, setNewShare] = useState<any>(null);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [revenueAmount, setRevenueAmount] = useState('');
+  const [addingRevenue, setAddingRevenue] = useState(false);
 
   useEffect(() => {
     params.then(p => {
@@ -106,6 +108,39 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     if (newShare?.share_url) {
       navigator.clipboard.writeText(newShare.share_url);
       alert('Your share link copied to clipboard!');
+    }
+  };
+
+  const handleAddRevenue = async () => {
+    const amount = parseInt(revenueAmount);
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    setAddingRevenue(true);
+    try {
+      const response = await fetch('/api/revenue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content_id: contentId,
+          amount_lamports: amount,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to add revenue');
+
+      const data = await response.json();
+      alert(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
+      setRevenueAmount('');
+      
+      // Reload content and tree to show updated earnings
+      await loadContent(contentId);
+    } catch (err) {
+      alert('Failed to add revenue. Please try again.');
+    } finally {
+      setAddingRevenue(false);
     }
   };
 
@@ -309,6 +344,43 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             </div>
           </div>
         </div>
+
+        {/* Revenue Section (Creator Only) */}
+        {isConnected && address && content?.creator_wallet?.toLowerCase() === address.toLowerCase() && (
+          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 backdrop-blur-xl rounded-3xl p-8 border border-purple-500/20 mb-6">
+            <h2 className="text-3xl font-bold text-white mb-4">Add Revenue</h2>
+            <p className="text-gray-300 mb-6">
+              Add revenue to this content and it will be automatically distributed across the entire viral chain based on contribution.
+            </p>
+            
+            <div className="bg-black/30 rounded-xl p-6">
+              <label htmlFor="revenue" className="block text-white font-semibold mb-2">
+                Revenue Amount (lamports)
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  id="revenue"
+                  value={revenueAmount}
+                  onChange={(e) => setRevenueAmount(e.target.value)}
+                  placeholder="1000000"
+                  min="1"
+                  className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <button
+                  onClick={handleAddRevenue}
+                  disabled={addingRevenue || !revenueAmount}
+                  className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-bold transition shadow-lg"
+                >
+                  {addingRevenue ? 'Distributing...' : 'Distribute Revenue'}
+                </button>
+              </div>
+              <p className="text-gray-400 text-sm mt-2">
+                Revenue will be split proportionally across all sharers, with earlier sharers earning more.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Share Section */}
         <div className="bg-gradient-to-br from-green-900/30 to-cyan-900/20 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 mb-6">
