@@ -89,17 +89,46 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   return (
     <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-12 max-w-6xl">
-        <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition mb-4 inline-block">
-          ← Back to Home
-        </Link>
+        <div className="flex gap-4 mb-6">
+          <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition">
+            ← Home
+          </Link>
+          <span className="text-gray-600">/</span>
+          <Link href="/explore" className="text-cyan-400 hover:text-cyan-300 transition">
+            Explore
+          </Link>
+        </div>
 
         {/* Content Header */}
-        <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-3xl p-8 border border-cyan-500/20 mb-6">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            {content.title}
-          </h1>
-          
-          <div className="grid md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-3xl overflow-hidden border border-cyan-500/20 mb-6">
+          {/* Media Display */}
+          {content.media_url && (
+            <div className="aspect-video bg-gradient-to-br from-cyan-900/50 to-blue-900/30 relative overflow-hidden flex items-center justify-center">
+              <img
+                src={content.media_url.includes('picsum.photos') ? `${content.media_url}?random=${content.id}` : content.media_url}
+                alt={content.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.outerHTML = '<div class="text-8xl">🎨</div>';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6">
+                <h1 className="text-5xl font-bold text-white drop-shadow-lg">
+                  {content.title}
+                </h1>
+              </div>
+            </div>
+          )}
+
+          <div className="p-8">
+            {!content.media_url && (
+              <h1 className="text-4xl font-bold text-white mb-6">
+                {content.title}
+              </h1>
+            )}
+            
+            <div className="grid md:grid-cols-4 gap-6 mb-6">
             <div className="bg-black/30 rounded-xl p-4">
               <p className="text-gray-400 text-sm mb-1">Total Shares</p>
               <p className="text-3xl font-bold text-cyan-400">{content.total_shares}</p>
@@ -118,9 +147,10 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             </div>
           </div>
 
-          <div className="bg-black/30 rounded-xl p-4">
-            <p className="text-gray-400 text-sm mb-1">Creator</p>
-            <p className="text-white font-mono text-sm">{content.creator_wallet}</p>
+            <div className="bg-black/30 rounded-xl p-4">
+              <p className="text-gray-400 text-sm mb-1">Creator</p>
+              <p className="text-white font-mono text-sm">{content.creator_wallet}</p>
+            </div>
           </div>
         </div>
 

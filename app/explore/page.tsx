@@ -71,52 +71,57 @@ export default function ExplorePage() {
             </Link>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {content.map((item) => (
               <Link
                 key={item.id}
                 href={`/content/${item.id}`}
-                className="group bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-200 hover:transform hover:scale-105"
+                className="group bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-200 hover:transform hover:scale-[1.02]"
               >
                 {/* Media Preview */}
-                <div className="aspect-video bg-black/50 relative overflow-hidden">
-                  {item.media_url && (
-                    <img
-                      src={item.media_url}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                <div className="aspect-video bg-gradient-to-br from-cyan-900/50 to-blue-900/30 relative overflow-hidden flex items-center justify-center">
+                  {item.media_url ? (
+                    <>
+                      <img
+                        src={item.media_url.includes('picsum.photos') ? `${item.media_url}?random=${item.id}` : item.media_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 absolute inset-0 z-10"
+                        onError={(e) => {
+                          e.currentTarget.classList.add('hidden');
+                        }}
+                      />
+                      <div className="text-6xl z-0">🎨</div>
+                    </>
+                  ) : (
+                    <div className="text-6xl">🎨</div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-white font-bold text-lg line-clamp-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
+                  <div className="absolute bottom-4 left-4 right-4 pointer-events-none z-30">
+                    <h3 className="text-white font-bold text-xl line-clamp-2 drop-shadow-lg">
                       {item.title}
                     </h3>
                   </div>
                 </div>
 
                 {/* Stats */}
-                <div className="p-4">
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="bg-black/30 rounded-lg p-2 text-center">
-                      <p className="text-cyan-400 font-bold text-xl">{item.total_shares || 0}</p>
-                      <p className="text-gray-400 text-xs">Shares</p>
+                <div className="p-5">
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bg-black/40 rounded-lg p-3 text-center border border-cyan-500/10">
+                      <p className="text-cyan-400 font-bold text-2xl">{item.total_shares || 0}</p>
+                      <p className="text-gray-400 text-xs mt-1">Shares</p>
                     </div>
-                    <div className="bg-black/30 rounded-lg p-2 text-center">
-                      <p className="text-blue-400 font-bold text-xl">{item.total_engagements || 0}</p>
-                      <p className="text-gray-400 text-xs">Engages</p>
+                    <div className="bg-black/40 rounded-lg p-3 text-center border border-blue-500/10">
+                      <p className="text-blue-400 font-bold text-2xl">{item.total_engagements || 0}</p>
+                      <p className="text-gray-400 text-xs mt-1">Engages</p>
                     </div>
-                    <div className="bg-black/30 rounded-lg p-2 text-center">
-                      <p className="text-green-400 font-bold text-xl">{item.total_revenue_lamports || 0}</p>
-                      <p className="text-gray-400 text-xs">Revenue</p>
+                    <div className="bg-black/40 rounded-lg p-3 text-center border border-green-500/10">
+                      <p className="text-green-400 font-bold text-2xl">{item.total_revenue_lamports || 0}</p>
+                      <p className="text-gray-400 text-xs mt-1">Revenue</p>
                     </div>
                   </div>
 
-                  <div className="bg-black/30 rounded-lg p-2">
-                    <p className="text-gray-400 text-xs mb-1">Creator</p>
+                  <div className="bg-black/40 rounded-lg p-3 border border-white/10">
+                    <p className="text-gray-400 text-xs mb-1.5">Creator</p>
                     <p className="text-white font-mono text-xs truncate">
                       {item.creator_wallet}
                     </p>
