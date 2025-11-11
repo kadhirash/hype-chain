@@ -37,14 +37,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Create initial share for the creator (depth 0, no parent)
+    const shareId = crypto.randomUUID()
     const { data: creatorShare, error: shareError } = await supabase
       .from('shares')
       .insert({
+        id: shareId,
         content_id: content.id,
         wallet_address: creator_wallet,
         parent_share_id: null,
         share_depth: 0,
-        share_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/share/${content.id}`,
+        share_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/share/${shareId}`,
       })
       .select()
       .single()

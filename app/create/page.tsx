@@ -93,16 +93,17 @@ export default function CreateContentPage() {
                   Media URL *
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   id="mediaUrl"
                   required
+                  pattern="https?://.+"
                   value={formData.mediaUrl}
                   onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                   placeholder="https://example.com/image.jpg"
                 />
                 <p className="text-gray-400 text-sm mt-2">
-                  Link to your image, video, or content
+                  Must start with http:// or https://
                 </p>
               </div>
 
