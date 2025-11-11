@@ -6,9 +6,34 @@ export async function POST(request: NextRequest) {
   try {
     const { content_id, amount_lamports } = await request.json();
 
-    if (!content_id || !amount_lamports || amount_lamports <= 0) {
+    // Validate content_id
+    if (!content_id || typeof content_id !== 'string') {
       return NextResponse.json(
-        { error: 'content_id and positive amount_lamports required' },
+        { error: 'Valid content_id required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate amount_lamports
+    const amount = Number(amount_lamports);
+    
+    // Check for non-numeric, NaN, decimals, negative, or zero
+    if (
+      typeof amount_lamports !== 'number' ||
+      isNaN(amount) ||
+      !Number.isInteger(amount) ||
+      amount <= 0
+    ) {
+      return NextResponse.json(
+        { error: 'amount_lamports must be a positive integer (lamports are indivisible)' },
+        { status: 400 }
+      );
+    }
+
+    // Check for values exceeding JavaScript's max safe integer
+    if (amount > Number.MAX_SAFE_INTEGER) {
+      return NextResponse.json(
+        { error: `amount_lamports exceeds maximum safe value (${Number.MAX_SAFE_INTEGER})` },
         { status: 400 }
       );
     }
@@ -40,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Distribute revenue proportionally
     const distributions = shares.map((share, index) => {
-      const shareAmount = Math.floor((amount_lamports * weights[index]) / totalWeight);
+      const shareAmount = Math.floor((amount * weights[index]) / totalWeight);
       return {
         share_id: share.id,
         wallet_address: share.wallet_address,
@@ -48,6 +73,14 @@ export async function POST(request: NextRequest) {
         new_total: share.earnings_lamports + shareAmount,
       };
     });
+
+    // Handle rounding errors: give any remainder to the creator (first share, depth 0)
+    const distributedTotal = distributions.reduce((sum, d) => sum + d.amount, 0);
+    const remainder = amount - distributedTotal;
+    if (remainder > 0 && distributions.length > 0) {
+      distributions[0].amount += remainder;
+      distributions[0].new_total += remainder;
+    }
 
     // Update each share's earnings
     const updatePromises = distributions.map(dist =>
@@ -70,15 +103,16 @@ export async function POST(request: NextRequest) {
       await supabase
         .from('content')
         .update({ 
-          total_revenue_lamports: content.total_revenue_lamports + amount_lamports 
+          total_revenue_lamports: content.total_revenue_lamports + amount 
         })
         .eq('id', content_id);
     }
 
     return NextResponse.json({
       success: true,
-      amount_distributed: amount_lamports,
+      amount_distributed: amount,
       distributions,
+      remainder_given_to_creator: remainder,
     });
   } catch (error) {
     console.error('Revenue distribution error:', error);

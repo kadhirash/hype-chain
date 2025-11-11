@@ -111,6 +111,10 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     }
   };
 
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   const handleAddRevenue = async () => {
     const amount = parseInt(revenueAmount);
     if (!amount || amount <= 0) {
@@ -168,7 +172,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             <div className="flex gap-4 text-sm text-gray-400 mt-1">
               <span>Depth: {node.share_depth}</span>
               <span>Clicks: {node.click_count}</span>
-              <span>Earnings: {node.earnings_lamports} lamports</span>
+              <span>Earnings: {formatNumber(node.earnings_lamports)} lamports</span>
             </div>
           </div>
         </div>
@@ -330,7 +334,8 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             </div>
             <div className="bg-black/30 rounded-xl p-4">
               <p className="text-gray-400 text-sm mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-green-400">{content?.total_revenue_lamports || 0}</p>
+              <p className="text-3xl font-bold text-green-400">{formatNumber(content?.total_revenue_lamports || 0)}</p>
+              <p className="text-xs text-gray-500">lamports</p>
             </div>
             <div className="bg-black/30 rounded-xl p-4">
               <p className="text-gray-400 text-sm mb-1">Max Depth</p>
