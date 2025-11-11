@@ -23,7 +23,7 @@ hype-chain/
 │   ├── share/[shareId]/page.tsx  # Join viral chain via share link
 │   ├── content/[contentId]/      # Content detail + viral tree visualization
 │   │   └── page.tsx
-│   └── api/                      # Backend API routes
+│   └── api/                      # Next.js API routes (backend)
 │       ├── content/
 │       │   ├── route.ts          # POST /api/content, GET /api/content (list)
 │       │   └── [id]/route.ts     # GET /api/content/:id (detail + stats)
@@ -35,21 +35,26 @@ hype-chain/
 │       └── streams/              # Somnia Data Streams integration
 │           ├── events/route.ts   # SSE endpoint for live events
 │           └── history/[contentId]/route.ts  # Historical blockchain events
-├── components/
-│   └── Navigation.tsx            # Header navigation component
-├── lib/                          # Shared utilities
-│   ├── supabase.ts               # Supabase client + TypeScript types
-│   └── dataStreams.ts            # Somnia Data Streams SDK integration
+├── src/                          # Source code (organized)
+│   ├── components/
+│   │   └── Navigation.tsx        # Header navigation component
+│   ├── lib/                      # Shared utilities
+│   │   ├── supabase.ts           # Supabase client + TypeScript types
+│   │   └── dataStreams.ts        # Somnia Data Streams SDK integration
+│   ├── database/
+│   │   └── schema.sql            # PostgreSQL schema for Supabase
+│   ├── scripts/
+│   │   └── deploy.ts             # Contract deployment script
+│   └── test/
+│       └── HypeChain.test.ts     # Smart contract tests (Hardhat)
 ├── contracts/
-│   └── HypeChain.sol             # Solidity smart contract
-├── scripts/
-│   └── deploy.ts                 # Contract deployment script
-├── test/
-│   └── HypeChain.test.ts         # Smart contract tests (Hardhat)
-├── database/
-│   └── schema.sql                # PostgreSQL schema for Supabase
+│   ├── HypeChain.sol             # Solidity smart contract
+│   ├── HypeChain.json            # Contract ABI
+│   └── deployed-contract.json    # Deployment info
 ├── hardhat.config.ts             # Hardhat configuration
-└── deployed-contract.json        # Deployed contract address
+├── tailwind.config.ts            # Tailwind CSS configuration
+├── tsconfig.json                 # TypeScript configuration
+└── package.json                  # Dependencies
 
 ```
 
@@ -162,32 +167,7 @@ hype-chain/
 - No clear API boundaries
 - Difficult to scale independently
 
-### Recommended Structure (Future)
-For production-grade separation:
-
-```
-hype-chain/
-├── frontend/                 # Next.js frontend only
-│   ├── src/
-│   │   ├── app/             # Pages
-│   │   ├── components/      # React components
-│   │   └── services/        # API client services
-│   └── package.json
-├── backend/                  # Express/Fastify API
-│   ├── src/
-│   │   ├── controllers/     # Route handlers
-│   │   ├── services/        # Business logic
-│   │   ├── models/          # Database models
-│   │   └── middleware/      # Auth, validation, logging
-│   └── package.json
-├── contracts/                # Smart contracts
-│   ├── contracts/
-│   ├── scripts/
-│   ├── test/
-│   └── hardhat.config.ts
-└── shared/                   # Shared types
-    └── types/
-```
+**Note:** For this hackathon MVP, we're sticking with Next.js API routes (app/api/). A fully separated backend (Express/Fastify) would only be needed for production scaling at a later stage.
 
 ## Security
 

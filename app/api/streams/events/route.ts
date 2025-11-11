@@ -3,7 +3,7 @@ import {
   subscribeToContentCreated,
   subscribeToShareCreated,
   subscribeToEngagementRecorded,
-} from '@/lib/dataStreams';
+} from '@/src/lib/dataStreams';
 
 // Server-Sent Events endpoint for real-time blockchain events
 export async function GET(req: NextRequest) {
