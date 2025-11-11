@@ -90,10 +90,13 @@ export default function ExplorePage() {
                           e.currentTarget.classList.add('hidden');
                         }}
                       />
-                      <div className="text-6xl z-0">🎨</div>
+                      {/* Fallback pattern if image fails */}
+                      <div className="absolute inset-0 z-0 flex items-center justify-center">
+                        <div className="text-cyan-400/30 text-9xl font-black">?</div>
+                      </div>
                     </>
                   ) : (
-                    <div className="text-6xl">🎨</div>
+                    <div className="text-cyan-400/30 text-9xl font-black">?</div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
                   <div className="absolute bottom-4 left-4 right-4 pointer-events-none z-30">

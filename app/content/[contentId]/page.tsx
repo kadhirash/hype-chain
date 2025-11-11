@@ -14,6 +14,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const [creating, setCreating] = useState(false);
   const [newShare, setNewShare] = useState<any>(null);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     params.then(p => {
@@ -25,6 +26,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const loadContent = async (id: string) => {
     try {
       setImageLoadFailed(false); // Reset image state
+      setImageLoaded(false);
       const [contentRes, treeRes] = await Promise.all([
         fetch(`/api/content/${id}`),
         fetch(`/api/shares/${id}/tree`),
@@ -108,10 +110,14 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
   const renderTreeNode = (node: any, level: number = 0) => {
     return (
-      <div key={node.id} className="ml-8">
-        <div className="flex items-center gap-3 py-2">
-          <div className="text-2xl">{level === 0 ? '👤' : '🔗'}</div>
-          <div className="flex-1 bg-white/10 rounded-lg p-3 border border-cyan-500/20">
+      <div key={node.id} className="relative group/parentcard">
+        <div className="flex items-center gap-3 py-3">
+          {level === 0 && (
+            <div className="text-2xl transition-transform group-hover/parentcard:scale-125 group-hover/parentcard:rotate-12 duration-300">
+              👤
+            </div>
+          )}
+          <div className="flex-1 bg-white/10 rounded-lg p-3 border border-cyan-500/20 transition-all duration-300 group-hover/parentcard:border-cyan-500/60 group-hover/parentcard:bg-white/20 group-hover/parentcard:shadow-lg group-hover/parentcard:shadow-cyan-500/30">
             <p className="text-white font-mono text-sm truncate">
               {node.wallet_address}
             </p>
@@ -123,8 +129,59 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
           </div>
         </div>
         {node.children && node.children.length > 0 && (
-          <div className="border-l-2 border-cyan-500/30 ml-4">
-            {node.children.map((child: any) => renderTreeNode(child, level + 1))}
+          <div className="ml-12 space-y-6 mt-6 relative">
+            {node.children.map((child: any, childIndex: number) => (
+              <div key={child.id} className="relative group/thischild">
+                {/* Vertical line - hidden */}
+                <div 
+                  className="absolute -left-6 bottom-full w-0.5 bg-transparent transition-all pointer-events-none" 
+                  style={{ 
+                    height: `${childIndex === 0 ? '1.5rem' : childIndex === 1 ? '17rem' : '1.5rem'}`
+                  }}
+                />
+                
+                {/* Horizontal line - hidden */}
+                <div className="absolute -left-6 top-2 w-6 h-0.5 bg-transparent transition-all pointer-events-none" />
+                
+                {/* Vertical chains - grow on parent hover OR this child's hover */}
+                <div 
+                  className={`absolute -left-7 bottom-full flex flex-col-reverse gap-0 overflow-hidden transition-all duration-500 h-0 pointer-events-none ${
+                    childIndex === 0 ? 'group-hover/parentcard:h-6 group-hover/thischild:h-6' : 
+                    childIndex === 1 ? 'group-hover/parentcard:h-72 group-hover/thischild:h-72' : 
+                    'group-hover/parentcard:h-6 group-hover/thischild:h-6'
+                  }`}
+                >
+                  {Array.from({ length: childIndex === 1 ? 20 : 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="text-cyan-400/70 text-base leading-tight transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+                      style={{
+                        transitionDelay: `${i * 30}ms`,
+                      }}
+                    >
+                      ⛓️
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Horizontal chains - grow on parent hover OR this child's hover */}
+                <div className="absolute -left-6 top-1 flex gap-0 overflow-hidden transition-all duration-500 w-0 group-hover/parentcard:w-6 group-hover/thischild:w-6 pointer-events-none">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="text-cyan-400/70 text-sm leading-none transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+                      style={{
+                        transitionDelay: `${childIndex === 1 ? 240 : 120}ms`,
+                      }}
+                    >
+                      ⛓️
+                    </div>
+                  ))}
+                </div>
+                
+                {renderTreeNode(child, level + 1)}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -169,20 +226,27 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
         {/* Content Header */}
         <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-3xl overflow-hidden border border-cyan-500/20 mb-6">
-          {/* Media Display */}
-          {content?.media_url && isImageUrl(content.media_url) && !imageLoadFailed && (
-            <div className="aspect-video bg-gradient-to-br from-cyan-900/50 to-blue-900/30 relative overflow-hidden flex items-center justify-center">
+          {/* Try to load image in background */}
+          {content?.media_url && isImageUrl(content.media_url) && (
+            <img
+              src={content.media_url.includes('picsum.photos') ? `${content.media_url}?random=${content.id}` : content.media_url}
+              alt=""
+              className="hidden"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoadFailed(true)}
+            />
+          )}
+
+          {/* Show successful image */}
+          {imageLoaded && (
+            <div className="aspect-video bg-gradient-to-br from-cyan-900/50 to-blue-900/30 relative overflow-hidden">
               <img
                 src={content.media_url.includes('picsum.photos') ? `${content.media_url}?random=${content.id}` : content.media_url}
                 alt={content.title}
-                className="w-full h-full object-cover absolute inset-0 z-10"
-                onError={() => {
-                  setImageLoadFailed(true);
-                }}
+                className="w-full h-full object-cover"
               />
-              <div className="text-6xl z-0">🎨</div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none" />
-              <div className="absolute bottom-6 left-6 right-6 z-30 pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
                 <h1 className="text-5xl font-bold text-white drop-shadow-lg">
                   {content.title}
                 </h1>
@@ -190,12 +254,26 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             </div>
           )}
 
+          {/* Show title header by default (until image loads) */}
+          {!imageLoaded && (
+            <div className="relative overflow-hidden">
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-500/20" />
+                <div className="absolute inset-0" style={{
+                  backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(34, 211, 238, 0.15) 1px, transparent 0)',
+                  backgroundSize: '40px 40px'
+                }} />
+              </div>
+              <div className="relative p-16 border-b border-cyan-500/20">
+                <h1 className="text-6xl font-bold text-white text-center">
+                  {content?.title}
+                </h1>
+              </div>
+            </div>
+          )}
+
           <div className="p-8">
-            {(!content?.media_url || !isImageUrl(content.media_url) || imageLoadFailed) && (
-              <h1 className="text-4xl font-bold text-white mb-6">
-                {content?.title}
-              </h1>
-            )}
             
             <div className="grid md:grid-cols-4 gap-6 mb-6">
             <div className="bg-black/30 rounded-xl p-4">
