@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useWallet } from '@/src/contexts/WalletContext';
 
 export default function CreateContentPage() {
+  const { address, isConnected, connect } = useWallet();
   const [formData, setFormData] = useState({
     title: '',
     mediaUrl: '',
@@ -12,6 +14,13 @@ export default function CreateContentPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+
+  // Auto-fill wallet address when connected
+  useEffect(() => {
+    if (isConnected && address) {
+      setFormData((prev) => ({ ...prev, walletAddress: address }));
+    }
+  }, [isConnected, address]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,18 +121,40 @@ export default function CreateContentPage() {
                 <label htmlFor="walletAddress" className="block text-white font-semibold mb-2">
                   Your Wallet Address *
                 </label>
-                <input
-                  type="text"
-                  id="walletAddress"
-                  required
-                  value={formData.walletAddress}
-                  onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  placeholder="0x..."
-                />
-                <p className="text-gray-400 text-sm mt-2">
-                  Where you'll receive earnings from your viral content
-                </p>
+                {isConnected && address ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      id="walletAddress"
+                      required
+                      value={formData.walletAddress}
+                      readOnly
+                      className="w-full px-4 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono focus:outline-none cursor-not-allowed"
+                    />
+                    <p className="text-cyan-400 text-sm">
+                      ✓ Using connected wallet address
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      id="walletAddress"
+                      required
+                      value={formData.walletAddress}
+                      onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="0x... or connect your wallet"
+                    />
+                    <button
+                      type="button"
+                      onClick={connect}
+                      className="w-full px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30"
+                    >
+                      Connect Wallet to Auto-Fill
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Error */}
