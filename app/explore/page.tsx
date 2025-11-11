@@ -133,6 +133,14 @@ export default function ExplorePage() {
                       {item.creator_wallet}
                     </p>
                   </div>
+
+                  {item.deleted_shares > 0 && (
+                    <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-2 flex items-center gap-2">
+                      <span className="text-red-400 text-xs font-semibold">
+                        {item.deleted_shares} deleted share{item.deleted_shares !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </Link>
             ))}
