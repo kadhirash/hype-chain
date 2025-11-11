@@ -8,6 +8,10 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   useEffect(() => {
     loadContent();
   }, []);
@@ -118,7 +122,7 @@ export default function ExplorePage() {
                       <p className="text-gray-400 text-xs mt-1">Engages</p>
                     </div>
                     <div className="bg-black/40 rounded-lg p-3 text-center border border-green-500/10">
-                      <p className="text-green-400 font-bold text-2xl">{item.total_revenue_lamports || 0}</p>
+                      <p className="text-green-400 font-bold text-lg">{formatNumber(item.total_revenue_lamports || 0)}</p>
                       <p className="text-gray-400 text-xs mt-1">Revenue</p>
                     </div>
                   </div>
