@@ -209,15 +209,9 @@ export default function CreateContentPage() {
             </div>
 
             {/* Content Info */}
-            <div className="grid md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-gray-400 text-sm">Content ID</p>
-                <p className="text-white font-mono text-sm">{result.content.id}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm">NFT Address</p>
-                <p className="text-white font-mono text-sm truncate">{result.content.nft_address}</p>
-              </div>
+            <div className="bg-black/30 rounded-xl p-4 mb-6">
+              <p className="text-gray-400 text-sm mb-1">Content ID</p>
+              <p className="text-white font-mono text-sm">{result.content.id}</p>
             </div>
 
             {/* Actions */}

@@ -54,7 +54,7 @@ export default function HomePage() {
               <div className="text-5xl mb-4">🎨</div>
               <h3 className="text-2xl font-bold text-white mb-3">1. Create</h3>
               <p className="text-gray-300 leading-relaxed">
-                Upload your content and mint it as an NFT on Somnia. Get your unique shareable link.
+                Upload your content and get tracked on-chain. Receive your unique shareable link.
               </p>
             </div>
             
