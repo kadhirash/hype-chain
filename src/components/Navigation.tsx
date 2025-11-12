@@ -59,6 +59,16 @@ export default function Navigation() {
             >
               Profile
             </Link>
+            <Link
+              href="/leaderboard"
+              className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
+                isActive('/leaderboard')
+                  ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-500/50'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              Leaderboard
+            </Link>
 
             {/* Wallet Connection */}
             {isConnected && address ? (
