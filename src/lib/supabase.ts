@@ -23,6 +23,9 @@ export type Content = {
   total_engagements: number
   total_revenue_lamports: number  // Stored in lamports (1 SOL = 1B lamports)
   created_at: string
+  is_deleted?: boolean
+  deleted_at?: string | null
+  deleted_by?: string | null
 }
 
 export type Share = {
@@ -35,6 +38,9 @@ export type Share = {
   earnings_lamports: number
   share_url: string               // Unique shareable link
   created_at: string
+  is_deleted?: boolean
+  deleted_at?: string | null
+  deleted_by?: string | null
 }
 
 export type Engagement = {
