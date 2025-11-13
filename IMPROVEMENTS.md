@@ -80,24 +80,24 @@
 
 ## Low Priority / Nice to Have
 
-### 8. Code Duplication
+### 9. Code Duplication
 **Files:** Navigation component (mobile vs desktop)
 
 **Issue:** Similar logic duplicated for mobile/desktop views.
 
 **Solution:** Extract shared logic into helper functions (but current approach is fine for hackathon).
 
-### 9. Performance Optimizations
+### 10. Performance Optimizations
 - Add React.memo for expensive components
 - Implement virtual scrolling for long lists (explore page)
 - Add debouncing for search/filter inputs (if added)
 
-### 10. Accessibility
+### 11. Accessibility
 - Add ARIA labels to buttons
 - Improve keyboard navigation
 - Add focus indicators
 
-### 11. SEO Improvements
+### 12. SEO Improvements
 - Add meta tags to pages
 - Add Open Graph tags
 - Add structured data (JSON-LD)
