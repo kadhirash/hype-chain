@@ -67,6 +67,17 @@
 
 **Solution:** Add startup validation for required env vars.
 
+### 8. Dynamic Chain Height in Viral Tree
+**File:** `app/content/[contentId]/page.tsx` (lines 311, 322)
+
+**Issue:** Chain height is hardcoded at `17rem`/`h-72` for specific child indices (`childIndex === 1`), causing chains to extend beyond user cards when there are multiple children or different depths.
+
+**Solution:** Calculate chain height dynamically based on:
+- Actual distance between parent and child nodes
+- Number of siblings between nodes
+- Depth level
+- Use `ref` to measure actual DOM positions and calculate required height
+
 ## Low Priority / Nice to Have
 
 ### 8. Code Duplication
