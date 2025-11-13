@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
+import { toast } from '@/src/components/Toast';
 
 export default function SharePage({ params }: { params: Promise<{ shareId: string }> }) {
   const { address, isConnected, connect } = useWallet();
@@ -57,7 +58,7 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
 
   const handleCreateShare = async () => {
     if (!walletAddress) {
-      alert('Please enter your wallet address');
+      toast.error('Please enter your wallet address');
       return;
     }
 
@@ -77,8 +78,9 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
 
       const data = await response.json();
       setNewShare(data.share);
+      toast.success('Share created successfully!');
     } catch (err) {
-      alert('Failed to create share. Please try again.');
+      toast.error('Failed to create share. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -87,7 +89,7 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
   const handleCopyLink = () => {
     if (newShare?.share_url) {
       navigator.clipboard.writeText(newShare.share_url);
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 

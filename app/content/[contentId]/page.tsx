@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
+import { toast } from '@/src/components/Toast';
 
 export default function ContentDetailPage({ params }: { params: Promise<{ contentId: string }> }) {
   const { address, isConnected, connect } = useWallet();
@@ -66,12 +67,12 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleCopyPageUrl = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    alert('Page URL copied to clipboard!');
+    toast.success('Page URL copied to clipboard!');
   };
 
   const handleCreateShare = async () => {
     if (!walletAddress) {
-      alert('Please enter your wallet address');
+      toast.error('Please enter your wallet address');
       return;
     }
 
@@ -102,8 +103,9 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       
       // Reload full content and tree to get latest data
       await loadContent(contentId);
+      toast.success('Share created successfully!');
     } catch (err) {
-      alert('Failed to create share. Please try again.');
+      toast.error('Failed to create share. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -112,7 +114,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleCopyShareLink = () => {
     if (newShare?.share_url) {
       navigator.clipboard.writeText(newShare.share_url);
-      alert('Your share link copied to clipboard!');
+      toast.success('Your share link copied to clipboard!');
     }
   };
 
@@ -123,7 +125,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleAddRevenue = async () => {
     const amount = parseInt(revenueAmount);
     if (!amount || amount <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
@@ -141,13 +143,13 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       if (!response.ok) throw new Error('Failed to add revenue');
 
       const data = await response.json();
-      alert(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
+      toast.success(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
       setRevenueAmount('');
       
       // Reload content and tree to show updated earnings
       await loadContent(contentId);
     } catch (err) {
-      alert('Failed to add revenue. Please try again.');
+      toast.error('Failed to add revenue. Please try again.');
     } finally {
       setAddingRevenue(false);
     }

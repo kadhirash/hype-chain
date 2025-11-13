@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
+import { toast } from '@/src/components/Toast';
 
 export default function CreateContentPage() {
   const { address, isConnected, connect } = useWallet();
@@ -56,7 +57,7 @@ export default function CreateContentPage() {
   const handleCopyLink = () => {
     if (result?.share?.share_url) {
       navigator.clipboard.writeText(result.share.share_url);
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
