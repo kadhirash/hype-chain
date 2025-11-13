@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import LiveFeed from '@/src/components/LiveFeed';
 import { ContentListResponse } from '@/src/types/api';
 import { Content } from '@/src/lib/supabase';
 
 export default function ExplorePage() {
+  const router = useRouter();
   const [content, setContent] = useState<ContentListResponse['content']>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -155,13 +157,15 @@ export default function ExplorePage() {
                   )}
 
                   {/* Share Button */}
-                  <Link
-                    href={`/content/${item.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-4 w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 text-white rounded-lg font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-green-500/50 text-center block"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/content/${item.id}`);
+                    }}
+                    className="mt-4 w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 text-white rounded-lg font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-green-500/50 text-center"
                   >
                     🚀 Share & Earn
-                  </Link>
+                  </button>
                 </div>
               </Link>
               ))}
