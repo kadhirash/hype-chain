@@ -63,11 +63,11 @@ export default function ToastContainer() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+    <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
       {toastList.map((toast) => (
         <div
           key={toast.id}
-          className={`pointer-events-auto min-w-[300px] max-w-md px-4 py-3 rounded-lg shadow-lg backdrop-blur-xl border transition-all duration-300 animate-in slide-in-from-right ${
+          className={`toast-slide-in pointer-events-auto min-w-[300px] max-w-md px-4 py-3 rounded-lg shadow-lg backdrop-blur-xl border transition-all duration-300 ${
             toast.type === 'success'
               ? 'bg-green-900/90 border-green-500/50 text-white'
               : toast.type === 'error'
@@ -77,7 +77,7 @@ export default function ToastContainer() {
           onClick={() => removeToast(toast.id)}
         >
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 text-lg font-bold">
               {toast.type === 'success' && '✓'}
               {toast.type === 'error' && '✕'}
               {toast.type === 'info' && 'ℹ'}
@@ -88,7 +88,7 @@ export default function ToastContainer() {
                 e.stopPropagation();
                 removeToast(toast.id);
               }}
-              className="flex-shrink-0 text-white/70 hover:text-white transition"
+              className="flex-shrink-0 text-white/70 hover:text-white transition text-lg font-bold"
             >
               ✕
             </button>

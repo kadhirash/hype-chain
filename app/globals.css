@@ -30,3 +30,18 @@
     scrollbar-color: rgba(6, 182, 212, 0.7) rgba(30, 41, 59, 0.5);
   }
 }
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
