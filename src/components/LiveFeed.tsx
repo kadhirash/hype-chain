@@ -100,25 +100,29 @@ export default function LiveFeed() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20" data-tick={tick}>
-      <div className="mb-4">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="relative">
+    <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-8 border border-cyan-500/20" data-tick={tick}>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative flex-shrink-0 w-3">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping" />
           </div>
           <h3 className="text-xl font-bold text-white">Live Activity</h3>
         </div>
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>Powered by Somnia Data Streams</span>
-          <span className="font-mono text-cyan-400">
+        <div className="flex flex-col gap-1.5 text-xs text-gray-400 ml-6">
+          <div className="flex items-center gap-2">
+            <span>Powered by</span>
+            <span className="text-blue-400 font-semibold">Somnia</span>
+            <span className="text-gray-500">Data Streams</span>
+          </div>
+          <div className="font-mono text-cyan-400">
             Updated: {lastUpdated.toLocaleTimeString('en-US', { 
               hour: '2-digit', 
               minute: '2-digit', 
               second: '2-digit',
               timeZoneName: 'short'
             })} ({Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago)
-          </span>
+          </div>
         </div>
       </div>
 
@@ -132,9 +136,9 @@ export default function LiveFeed() {
               href={`/content/${activity.contentId}`}
               className="block group"
             >
-              <div className="bg-black/30 hover:bg-black/50 rounded-lg p-3 border border-cyan-500/10 hover:border-cyan-500/30 transition-all">
+              <div className="bg-black/30 hover:bg-black/50 rounded-lg p-4 border border-cyan-500/10 hover:border-cyan-500/30 transition-all">
                 <div className="flex items-start gap-3">
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm mt-0.5 ${
                     activity.type === 'share' 
                       ? 'bg-cyan-500/20 text-cyan-400' 
                       : 'bg-blue-500/20 text-blue-400'
@@ -143,20 +147,20 @@ export default function LiveFeed() {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-white font-mono text-sm break-all">
+                    <div className="flex items-baseline gap-2 flex-wrap mb-1.5">
+                      <span className="text-white font-mono text-sm font-medium leading-normal">
                         {formatWallet(activity.wallet)}
                       </span>
-                      <span className="text-gray-400 text-xs whitespace-nowrap">
+                      <span className="text-gray-400 text-xs whitespace-nowrap leading-normal">
                         {activity.type === 'share' 
                           ? `shared${activity.depth ? ` (depth ${activity.depth})` : ''}` 
                           : activity.engagementType || 'engaged'}
                       </span>
                     </div>
-                    <p className="text-gray-300 text-sm truncate group-hover:text-cyan-300 transition break-words">
+                    <p className="text-gray-200 text-sm group-hover:text-cyan-300 transition break-words leading-normal mb-1">
                       {activity.contentTitle}
                     </p>
-                    <p className="text-gray-500 text-xs mt-1">
+                    <p className="text-gray-500 text-xs leading-normal">
                       {formatTimeAgo(activity.timestamp)}
                     </p>
                   </div>
