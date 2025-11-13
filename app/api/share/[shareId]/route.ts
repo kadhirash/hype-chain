@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError } from '@/src/lib/apiErrorHandler';
 
 export async function GET(
   req: NextRequest,
@@ -14,7 +15,11 @@ export async function GET(
       .eq('id', shareId)
       .single();
 
-    if (error || !share) {
+    if (error) {
+      return handleApiError(error, 'Failed to fetch share');
+    }
+    
+    if (!share) {
       return NextResponse.json(
         { error: 'Share not found' },
         { status: 404 }
@@ -23,11 +28,7 @@ export async function GET(
 
     return NextResponse.json({ share });
   } catch (error) {
-    console.error('Error fetching share:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch share' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch share');
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
+import { handleApiError } from '@/src/lib/apiErrorHandler'
 
 // GET /api/content/[id] - Get content by ID with stats
 export async function GET(
@@ -16,7 +17,11 @@ export async function GET(
       .eq('id', id)
       .single()
 
-    if (error || !content) {
+    if (error) {
+      return handleApiError(error, 'Failed to fetch content')
+    }
+    
+    if (!content) {
       return NextResponse.json(
         { error: 'Content not found' },
         { status: 404 }
@@ -52,11 +57,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'Failed to fetch content details')
   }
 }
 

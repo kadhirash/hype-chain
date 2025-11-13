@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError } from '@/src/lib/apiErrorHandler';
 
 // POST /api/revenue - Add revenue to content and distribute to viral chain
 export async function POST(request: NextRequest) {
@@ -45,9 +46,13 @@ export async function POST(request: NextRequest) {
       .eq('content_id', content_id)
       .order('share_depth', { ascending: true });
 
-    if (sharesError || !shares || shares.length === 0) {
+    if (sharesError) {
+      return handleApiError(sharesError, 'Failed to fetch shares for revenue distribution');
+    }
+    
+    if (!shares || shares.length === 0) {
       return NextResponse.json(
-        { error: 'No shares found for this content' },
+        { error: 'No shares found for this content. Create shares before distributing revenue.' },
         { status: 404 }
       );
     }
@@ -115,11 +120,7 @@ export async function POST(request: NextRequest) {
       remainder_given_to_creator: remainder,
     });
   } catch (error) {
-    console.error('Revenue distribution error:', error);
-    return NextResponse.json(
-      { error: 'Failed to distribute revenue' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to distribute revenue');
   }
 }
 

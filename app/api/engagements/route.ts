@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
+import { handleApiError, validateRequiredFields } from '@/src/lib/apiErrorHandler'
 
 // POST /api/engagements - Track engagement (view, click, share)
 export async function POST(request: NextRequest) {
@@ -9,9 +10,10 @@ export async function POST(request: NextRequest) {
     const { share_id, content_id, engagement_type, wallet_address } = body
 
     // Validate required fields
-    if (!share_id || !content_id || !engagement_type) {
+    const validation = validateRequiredFields(body, ['share_id', 'content_id', 'engagement_type'])
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: 'Missing required fields: share_id, content_id, engagement_type' },
+        { error: `Missing required fields: ${validation.missingFields?.join(', ')}` },
         { status: 400 }
       )
     }
@@ -31,7 +33,11 @@ export async function POST(request: NextRequest) {
       .eq('id', share_id)
       .single()
 
-    if (shareError || !share) {
+    if (shareError) {
+      return handleApiError(shareError, 'Failed to verify share exists')
+    }
+    
+    if (!share) {
       return NextResponse.json(
         { error: 'Share not found' },
         { status: 404 }
@@ -51,11 +57,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (engagementError) {
-      console.error('Engagement creation error:', engagementError)
-      return NextResponse.json(
-        { error: 'Failed to record engagement', details: engagementError.message },
-        { status: 500 }
-      )
+      return handleApiError(engagementError, 'Failed to record engagement')
     }
 
     // Update share click_count if it's a click
@@ -88,11 +90,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'Failed to record engagement')
   }
 }
 

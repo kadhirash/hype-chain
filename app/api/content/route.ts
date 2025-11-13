@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
+import { createErrorResponse, handleApiError, validateRequiredFields } from '@/src/lib/apiErrorHandler'
 
 // POST /api/content - Create new content
 export async function POST(request: NextRequest) {
@@ -9,9 +10,10 @@ export async function POST(request: NextRequest) {
     const { nft_address, creator_wallet, title, media_url } = body
 
     // Validate required fields
-    if (!nft_address || !creator_wallet || !title || !media_url) {
+    const validation = validateRequiredFields(body, ['nft_address', 'creator_wallet', 'title', 'media_url'])
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: 'Missing required fields: nft_address, creator_wallet, title, media_url' },
+        { error: `Missing required fields: ${validation.missingFields?.join(', ')}` },
         { status: 400 }
       )
     }
@@ -29,11 +31,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to create content', details: error.message },
-        { status: 500 }
-      )
+      return handleApiError(error, 'Failed to create content')
     }
 
     // Create initial share for the creator (depth 0, no parent)
@@ -53,11 +51,12 @@ export async function POST(request: NextRequest) {
 
     if (shareError) {
       console.error('Share creation error:', shareError)
-      // Content was created but share failed - still return content
+      // Content was created but share failed - still return content with warning
       return NextResponse.json(
         { 
           content,
-          warning: 'Content created but initial share failed',
+          warning: 'Content created but initial share failed. You can create a share manually.',
+          error: shareError.message,
         },
         { status: 201 }
       )
@@ -71,11 +70,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'Failed to create content')
   }
 }
 
@@ -94,11 +89,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1)
 
     if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch content' },
-        { status: 500 }
-      )
+      return handleApiError(error, 'Failed to fetch content')
     }
 
     // Get actual share counts for each content
@@ -125,11 +116,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ content: contentWithCounts, count: contentWithCounts.length })
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'Failed to fetch content list')
   }
 }
 

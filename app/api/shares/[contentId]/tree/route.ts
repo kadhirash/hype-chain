@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError } from '@/src/lib/apiErrorHandler';
 
 // Build hierarchical tree structure from flat shares data
 function buildViralTree(shares: any[]) {
@@ -58,11 +59,7 @@ export async function GET(
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch shares' },
-        { status: 500 }
-      );
+      return handleApiError(error, 'Failed to fetch shares for viral tree');
     }
 
     if (!shares || shares.length === 0) {
@@ -120,10 +117,6 @@ export async function GET(
       creatorShare: tree[0] || null,
     });
   } catch (error) {
-    console.error('Error building viral tree:', error);
-    return NextResponse.json(
-      { error: 'Failed to build viral tree' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to build viral tree');
   }
 }
