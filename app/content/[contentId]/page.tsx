@@ -4,18 +4,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
+import { ContentDetailResponse, ViralTreeResponse, ShareResponse, RevenueResponse } from '@/src/types/api';
+import { Content, Share } from '@/src/lib/supabase';
 
 export default function ContentDetailPage({ params }: { params: Promise<{ contentId: string }> }) {
   const { address, isConnected, connect } = useWallet();
   const [contentId, setContentId] = useState<string>('');
-  const [content, setContent] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
-  const [tree, setTree] = useState<any>(null);
+  const [content, setContent] = useState<Content | null>(null);
+  const [stats, setStats] = useState<ContentDetailResponse['stats'] | null>(null);
+  const [tree, setTree] = useState<ViralTreeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
   const [creating, setCreating] = useState(false);
-  const [newShare, setNewShare] = useState<any>(null);
+  const [newShare, setNewShare] = useState<Share | null>(null);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [revenueAmount, setRevenueAmount] = useState('');
@@ -51,8 +53,8 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
       if (!contentRes.ok) throw new Error('Content not found');
 
-      const contentData = await contentRes.json();
-      const treeData = treeRes.ok ? await treeRes.json() : null;
+      const contentData: ContentDetailResponse = await contentRes.json();
+      const treeData: ViralTreeResponse | null = treeRes.ok ? await treeRes.json() : null;
 
       setContent(contentData.content);
       setStats(contentData.stats);
@@ -90,7 +92,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
       if (!response.ok) throw new Error('Failed to create share');
 
-      const data = await response.json();
+      const data: ShareResponse = await response.json();
       setNewShare(data.share);
       
       // Optimistically update the stats
@@ -142,7 +144,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
 
       if (!response.ok) throw new Error('Failed to add revenue');
 
-      const data = await response.json();
+      const data: RevenueResponse = await response.json();
       toast.success(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
       setRevenueAmount('');
       

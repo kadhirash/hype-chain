@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
+import { CreateContentResponse } from '@/src/types/api';
 
 export default function CreateContentPage() {
   const { address, isConnected, connect } = useWallet();
@@ -13,7 +14,7 @@ export default function CreateContentPage() {
     walletAddress: '',
   });
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CreateContentResponse | null>(null);
   const [error, setError] = useState('');
 
   // Auto-fill wallet address when connected
@@ -45,7 +46,7 @@ export default function CreateContentPage() {
         throw new Error('Failed to create content');
       }
 
-      const data = await response.json();
+      const data: CreateContentResponse = await response.json();
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
