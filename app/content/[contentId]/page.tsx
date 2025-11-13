@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
+import { toast } from '@/src/components/Toast';
 
 export default function ContentDetailPage({ params }: { params: Promise<{ contentId: string }> }) {
   const { address, isConnected, connect } = useWallet();
@@ -66,12 +67,12 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleCopyPageUrl = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    alert('Page URL copied to clipboard!');
+    toast.success('Page URL copied to clipboard!');
   };
 
   const handleCreateShare = async () => {
     if (!walletAddress) {
-      alert('Please enter your wallet address');
+      toast.error('Please enter your wallet address');
       return;
     }
 
@@ -102,8 +103,9 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       
       // Reload full content and tree to get latest data
       await loadContent(contentId);
+      toast.success('Share created successfully!');
     } catch (err) {
-      alert('Failed to create share. Please try again.');
+      toast.error('Failed to create share. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -112,7 +114,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleCopyShareLink = () => {
     if (newShare?.share_url) {
       navigator.clipboard.writeText(newShare.share_url);
-      alert('Your share link copied to clipboard!');
+      toast.success('Your share link copied to clipboard!');
     }
   };
 
@@ -123,7 +125,7 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const handleAddRevenue = async () => {
     const amount = parseInt(revenueAmount);
     if (!amount || amount <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
@@ -141,13 +143,13 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       if (!response.ok) throw new Error('Failed to add revenue');
 
       const data = await response.json();
-      alert(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
+      toast.success(`Revenue distributed! ${data.distributions.length} sharers received payments.`);
       setRevenueAmount('');
       
       // Reload content and tree to show updated earnings
       await loadContent(contentId);
     } catch (err) {
-      alert('Failed to add revenue. Please try again.');
+      toast.error('Failed to add revenue. Please try again.');
     } finally {
       setAddingRevenue(false);
     }
@@ -493,6 +495,100 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
           </div>
         </div>
 
+        {/* Share Section - Moved Up */}
+        <div className="bg-gradient-to-br from-green-900/30 to-cyan-900/20 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="text-4xl">🚀</div>
+            <div>
+              <h2 className="text-3xl font-bold text-white">Join the Viral Chain</h2>
+              <p className="text-gray-300">Get your personalized share link and earn when it goes viral!</p>
+            </div>
+          </div>
+
+          {!newShare ? (
+            <div className="space-y-4">
+              {/* Quick Copy */}
+              <div className="bg-black/30 rounded-xl p-4">
+                <p className="text-gray-400 text-sm mb-2">Quick Share</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={typeof window !== 'undefined' ? window.location.href : ''}
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
+                  />
+                  <button
+                    onClick={handleCopyPageUrl}
+                    className="px-6 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              {/* Get Personalized Link */}
+              <div className="bg-black/30 rounded-xl p-4">
+                <p className="text-gray-400 text-sm mb-2">Get Your Personalized Link</p>
+                <p className="text-gray-500 text-xs mb-3">
+                  {isConnected && address ? 'Using connected wallet' : 'Enter your wallet to track earnings from your shares'}
+                </p>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={walletAddress}
+                      onChange={(e) => setWalletAddress(e.target.value)}
+                      placeholder="0x..."
+                      readOnly={isConnected && !!address}
+                      className={`flex-1 px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
+                        isConnected && address
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 cursor-not-allowed'
+                          : 'bg-white/10 border-white/20 focus:ring-2 focus:ring-green-500'
+                      }`}
+                    />
+                    {!isConnected && (
+                      <button
+                        onClick={connect}
+                        className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-lg font-semibold transition whitespace-nowrap"
+                      >
+                        Connect Wallet
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleCreateShare}
+                    disabled={creating || !walletAddress}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-bold transition shadow-lg disabled:cursor-not-allowed"
+                  >
+                    {creating ? 'Creating Share...' : 'Get My Share Link'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-black/30 rounded-xl p-4">
+              <p className="text-green-400 text-sm mb-2 font-semibold">✓ Your Share Link Created!</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={newShare.share_url}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
+                />
+                <button
+                  onClick={handleCopyShareLink}
+                  className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
+                >
+                  Copy Link
+                </button>
+              </div>
+              <p className="text-gray-400 text-xs mt-2">
+                Share this link! When others click and share, you'll earn a portion of the revenue.
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Revenue Section (Creator Only) */}
         {isConnected && address && content?.creator_wallet?.toLowerCase() === address.toLowerCase() && (
           <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 backdrop-blur-xl rounded-3xl p-8 border border-purple-500/20 mb-6">
@@ -597,118 +693,6 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             </div>
           </div>
         )}
-
-        {/* Share Section */}
-        <div className="bg-gradient-to-br from-green-900/30 to-cyan-900/20 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="text-4xl">🚀</div>
-            <div>
-              <h2 className="text-3xl font-bold text-white">Join the Viral Chain</h2>
-              <p className="text-gray-300">Get your personalized share link and earn when it goes viral!</p>
-            </div>
-          </div>
-
-          {!newShare ? (
-            <div className="space-y-4">
-              {/* Quick Copy */}
-              <div className="bg-black/30 rounded-xl p-4">
-                <p className="text-gray-400 text-sm mb-2">Quick Share</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={typeof window !== 'undefined' ? window.location.href : ''}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
-                  />
-                  <button
-                    onClick={handleCopyPageUrl}
-                    className="px-6 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-
-              {/* Get Personalized Link */}
-              <div className="bg-black/30 rounded-xl p-4">
-                <p className="text-gray-400 text-sm mb-2">Get Your Personalized Link</p>
-                <p className="text-gray-500 text-xs mb-3">
-                  {isConnected && address ? 'Using connected wallet' : 'Enter your wallet to track earnings from your shares'}
-                </p>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={walletAddress}
-                      onChange={(e) => setWalletAddress(e.target.value)}
-                      placeholder="0x..."
-                      readOnly={isConnected && !!address}
-                      className={`flex-1 px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
-                        isConnected && address
-                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 cursor-not-allowed'
-                          : 'bg-white/10 border-white/20 focus:ring-2 focus:ring-green-500'
-                      }`}
-                    />
-                    <button
-                      onClick={handleCreateShare}
-                      disabled={creating}
-                      className="px-8 py-2.5 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-semibold transition"
-                    >
-                      {creating ? 'Creating...' : 'Get Link'}
-                    </button>
-                  </div>
-                  {!isConnected && !address && (
-                    <button
-                      type="button"
-                      onClick={connect}
-                      className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-cyan-400 rounded-lg font-semibold transition border border-cyan-500/30 text-sm"
-                    >
-                      Connect Wallet to Auto-Fill
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-green-900/30 rounded-xl p-6 border border-green-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">✅</div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Your Share Link is Ready!</h3>
-                  <p className="text-gray-300 text-sm">Share this link to build your viral chain and earn rewards</p>
-                </div>
-              </div>
-
-              <div className="bg-black/30 rounded-lg p-4 mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={newShare.share_url}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm"
-                  />
-                  <button
-                    onClick={handleCopyShareLink}
-                    className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-4 text-sm">
-                <div className="bg-black/30 rounded-lg px-4 py-2">
-                  <span className="text-gray-400">Depth: </span>
-                  <span className="text-white font-semibold">{newShare.share_depth}</span>
-                </div>
-                <div className="bg-black/30 rounded-lg px-4 py-2">
-                  <span className="text-gray-400">Share ID: </span>
-                  <span className="text-white font-mono text-xs">{newShare.id.substring(0, 8)}...</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Viral Tree */}
         {tree && tree.tree && tree.tree.length > 0 ? (
