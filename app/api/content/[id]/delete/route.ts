@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError, validateRequiredFields } from '@/src/lib/apiErrorHandler';
 
 // POST /api/content/:id/delete - Soft delete content (marks as deleted, removes from explore)
 export async function POST(
@@ -8,14 +9,17 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const { wallet_address } = await request.json();
-
-    if (!wallet_address) {
+    const body = await request.json();
+    
+    const validation = validateRequiredFields(body, ['wallet_address']);
+    if (!validation.isValid) {
       return NextResponse.json(
         { error: 'wallet_address required' },
         { status: 400 }
       );
     }
+    
+    const { wallet_address } = body;
 
     // Fetch the content to verify ownership
     const { data: content, error: fetchError } = await supabase
@@ -24,7 +28,11 @@ export async function POST(
       .eq('id', id)
       .single();
 
-    if (fetchError || !content) {
+    if (fetchError) {
+      return handleApiError(fetchError, 'Failed to fetch content');
+    }
+    
+    if (!content) {
       return NextResponse.json(
         { error: 'Content not found' },
         { status: 404 }
@@ -58,11 +66,7 @@ export async function POST(
       .eq('id', id);
 
     if (updateError) {
-      console.error('Error deleting content:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to delete content' },
-        { status: 500 }
-      );
+      return handleApiError(updateError, 'Failed to delete content');
     }
 
     return NextResponse.json({
@@ -70,11 +74,7 @@ export async function POST(
       message: 'Content deleted successfully. It will no longer appear in the explore page.',
     });
   } catch (error) {
-    console.error('Delete content error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete content' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to delete content');
   }
 }
 

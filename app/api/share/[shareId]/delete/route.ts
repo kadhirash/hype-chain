@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError, validateRequiredFields } from '@/src/lib/apiErrorHandler';
 
 // DELETE /api/shares/:shareId/delete - Soft delete a share (marks as deleted, keeps children)
 export async function POST(
@@ -8,14 +9,17 @@ export async function POST(
 ) {
   try {
     const { shareId } = await params;
-    const { wallet_address } = await request.json();
-
-    if (!wallet_address) {
+    const body = await request.json();
+    
+    const validation = validateRequiredFields(body, ['wallet_address']);
+    if (!validation.isValid) {
       return NextResponse.json(
         { error: 'wallet_address required' },
         { status: 400 }
       );
     }
+    
+    const { wallet_address } = body;
 
     // Fetch the share to verify ownership
     const { data: share, error: fetchError } = await supabase
@@ -24,7 +28,11 @@ export async function POST(
       .eq('id', shareId)
       .single();
 
-    if (fetchError || !share) {
+    if (fetchError) {
+      return handleApiError(fetchError, 'Failed to fetch share');
+    }
+    
+    if (!share) {
       return NextResponse.json(
         { error: 'Share not found' },
         { status: 404 }
@@ -58,11 +66,7 @@ export async function POST(
       .eq('id', shareId);
 
     if (updateError) {
-      console.error('Error deleting share:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to delete share' },
-        { status: 500 }
-      );
+      return handleApiError(updateError, 'Failed to delete share');
     }
 
     return NextResponse.json({
@@ -70,11 +74,7 @@ export async function POST(
       message: 'Share deleted successfully. Your contribution to the viral chain is preserved for analytics.',
     });
   } catch (error) {
-    console.error('Delete share error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete share' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to delete share');
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
+import { handleApiError } from '@/src/lib/apiErrorHandler';
 
 // GET /api/activity/recent - Get recent shares and engagements for live feed
 export async function GET(request: NextRequest) {
@@ -28,11 +29,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (sharesError) {
-      console.error('Error fetching shares:', sharesError);
-      return NextResponse.json(
-        { error: 'Failed to fetch recent activity' },
-        { status: 500 }
-      );
+      return handleApiError(sharesError, 'Failed to fetch recent shares');
     }
 
     // Get recent engagements
@@ -55,6 +52,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (engagementsError) {
+      // Log but don't fail - we can still return shares if engagements fail
       console.error('Error fetching engagements:', engagementsError);
     }
 
@@ -86,11 +84,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ activities });
   } catch (error) {
-    console.error('API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch recent activity');
   }
 }
 

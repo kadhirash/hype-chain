@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
+import { handleApiError, validateRequiredFields } from '@/src/lib/apiErrorHandler'
 
 // POST /api/shares - Create a new share link
 export async function POST(request: NextRequest) {
@@ -9,9 +10,10 @@ export async function POST(request: NextRequest) {
     const { content_id, wallet_address, parent_share_id } = body
 
     // Validate required fields
-    if (!content_id || !wallet_address) {
+    const validation = validateRequiredFields(body, ['content_id', 'wallet_address'])
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: 'Missing required fields: content_id, wallet_address' },
+        { error: `Missing required fields: ${validation.missingFields?.join(', ')}` },
         { status: 400 }
       )
     }
@@ -23,7 +25,11 @@ export async function POST(request: NextRequest) {
       .eq('id', content_id)
       .single()
 
-    if (contentError || !content) {
+    if (contentError) {
+      return handleApiError(contentError, 'Failed to verify content exists')
+    }
+    
+    if (!content) {
       return NextResponse.json(
         { error: 'Content not found' },
         { status: 404 }
@@ -79,11 +85,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (shareError) {
-      console.error('Share creation error:', shareError)
-      return NextResponse.json(
-        { error: 'Failed to create share', details: shareError.message },
-        { status: 500 }
-      )
+      return handleApiError(shareError, 'Failed to create share')
     }
 
     // Update content total_shares count
@@ -105,11 +107,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error, 'Failed to create share')
   }
 }
 
