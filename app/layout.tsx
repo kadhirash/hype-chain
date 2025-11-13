@@ -16,12 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="relative">
         <WalletProvider>
           <Navigation />
           {children}
-          <ToastContainer />
         </WalletProvider>
+        <ToastContainer />
       </body>
     </html>
   )

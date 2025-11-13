@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -12,11 +12,14 @@ interface Toast {
 
 let toastId = 0;
 const toasts: Toast[] = [];
-const listeners: Array<() => void> = [];
+let listeners: Set<() => void> = new Set();
 
 const addToast = (message: string, type: ToastType = 'success') => {
   const id = `toast-${toastId++}`;
-  toasts.push({ id, message, type });
+  const toast: Toast = { id, message, type };
+  toasts.push(toast);
+  
+  // Notify all listeners
   listeners.forEach(listener => listener());
   
   // Auto-remove after 3 seconds
@@ -43,36 +46,45 @@ export default function ToastContainer() {
       setToastList([...toasts]);
     };
     
-    listeners.push(updateToasts);
+    listeners.add(updateToasts);
     updateToasts();
     
     return () => {
-      const index = listeners.indexOf(updateToasts);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
+      listeners.delete(updateToasts);
     };
   }, []);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     const index = toasts.findIndex(t => t.id === id);
     if (index > -1) {
       toasts.splice(index, 1);
       listeners.forEach(listener => listener());
     }
-  };
+  }, []);
+
+  if (toastList.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none">
+    <div 
+      className="fixed space-y-2 pointer-events-none" 
+      style={{ 
+        top: '20px',
+        right: '20px',
+        zIndex: 99999,
+        maxWidth: 'calc(100vw - 40px)',
+        position: 'fixed',
+        pointerEvents: 'none'
+      }}
+    >
       {toastList.map((toast) => (
         <div
           key={toast.id}
-          className={`toast-slide-in pointer-events-auto min-w-[300px] max-w-md px-4 py-3 rounded-lg shadow-lg backdrop-blur-xl border transition-all duration-300 ${
+          className={`toast-slide-in pointer-events-auto min-w-[300px] max-w-md px-4 py-3 rounded-lg shadow-2xl backdrop-blur-xl border-2 transition-all duration-300 cursor-pointer ${
             toast.type === 'success'
-              ? 'bg-green-900/90 border-green-500/50 text-white'
+              ? 'bg-green-600 border-green-400 text-white'
               : toast.type === 'error'
-              ? 'bg-red-900/90 border-red-500/50 text-white'
-              : 'bg-blue-900/90 border-blue-500/50 text-white'
+              ? 'bg-red-600 border-red-400 text-white'
+              : 'bg-blue-600 border-blue-400 text-white'
           }`}
           onClick={() => removeToast(toast.id)}
         >
@@ -98,4 +110,3 @@ export default function ToastContainer() {
     </div>
   );
 }
-
