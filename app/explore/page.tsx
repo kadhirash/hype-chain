@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LiveFeed from '@/src/components/LiveFeed';
+import { ContentListResponse } from '@/src/types/api';
+import { Content } from '@/src/lib/supabase';
 
 export default function ExplorePage() {
   const router = useRouter();
-  const [content, setContent] = useState<any[]>([]);
+  const [content, setContent] = useState<ContentListResponse['content']>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -24,7 +26,7 @@ export default function ExplorePage() {
       const response = await fetch('/api/content?limit=50');
       if (!response.ok) throw new Error('Failed to load content');
       
-      const data = await response.json();
+      const data: ContentListResponse = await response.json();
       setContent(data.content || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load content');
