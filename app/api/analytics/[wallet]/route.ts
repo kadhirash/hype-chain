@@ -44,7 +44,8 @@ export async function GET(
     // Calculate earnings by content
     const earningsByContent = new Map<string, { contentId: string; title: string; earnings: number; shares: number }>();
     shares?.forEach((share) => {
-      if (!share.content) return;
+      const content = Array.isArray(share.content) ? share.content[0] : share.content;
+      if (!content) return;
       const key = share.content_id;
       const existing = earningsByContent.get(key);
       if (existing) {
@@ -53,7 +54,7 @@ export async function GET(
       } else {
         earningsByContent.set(key, {
           contentId: share.content_id,
-          title: share.content?.title || 'Unknown',
+          title: content.title || 'Unknown',
           earnings: share.earnings_lamports || 0,
           shares: 1,
         });
@@ -121,14 +122,17 @@ export async function GET(
       ?.filter((s) => !s.is_deleted)
       .sort((a, b) => (b.earnings_lamports || 0) - (a.earnings_lamports || 0))
       .slice(0, 5)
-      .map((s) => ({
-        id: s.id,
-        contentTitle: s.content?.title || 'Unknown',
-        contentId: s.content_id,
-        earnings: s.earnings_lamports || 0,
-        clicks: s.click_count || 0,
-        depth: s.share_depth,
-      }));
+      .map((s) => {
+        const content = Array.isArray(s.content) ? s.content[0] : s.content;
+        return {
+          id: s.id,
+          contentTitle: content?.title || 'Unknown',
+          contentId: s.content_id,
+          earnings: s.earnings_lamports || 0,
+          clicks: s.click_count || 0,
+          depth: s.share_depth,
+        };
+      });
 
     return NextResponse.json({
       wallet,
