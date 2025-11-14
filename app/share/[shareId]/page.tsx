@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
+import { copyToClipboard } from '@/src/utils/clipboard';
+import { isValidWalletAddress, getWalletAddressError } from '@/src/utils/validation';
 
 export default function SharePage({ params }: { params: Promise<{ shareId: string }> }) {
   const { address, isConnected, connect } = useWallet();
@@ -15,6 +17,8 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
   const [walletAddress, setWalletAddress] = useState('');
   const [creating, setCreating] = useState(false);
   const [newShare, setNewShare] = useState<any>(null);
+  const [copying, setCopying] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(p => {
@@ -61,7 +65,15 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
       toast.error('Please enter your wallet address');
       return;
     }
-
+    
+    if (!isValidWalletAddress(walletAddress)) {
+      const error = getWalletAddressError(walletAddress);
+      setWalletError(error);
+      toast.error(error || 'Please enter a valid wallet address');
+      return;
+    }
+    
+    setWalletError(null);
     setCreating(true);
     try {
       const response = await fetch('/api/shares', {
@@ -86,10 +98,11 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
     }
   };
 
-  const handleCopyLink = () => {
-    if (newShare?.share_url) {
-      navigator.clipboard.writeText(newShare.share_url);
-      toast.success('Link copied to clipboard!');
+  const handleCopyLink = async () => {
+    if (newShare?.share_url && !copying) {
+      setCopying(true);
+      await copyToClipboard(newShare.share_url);
+      setCopying(false);
     }
   };
 
@@ -144,10 +157,20 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
                       type="text"
                       id="wallet"
                       value={walletAddress}
-                      onChange={(e) => setWalletAddress(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setWalletAddress(value);
+                        const error = getWalletAddressError(value);
+                        setWalletError(error);
+                      }}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/10 border ${
+                        walletError ? 'border-red-500/50' : 'border-white/20'
+                      } text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                       placeholder="0x... or connect your wallet"
                     />
+                    {walletError && (
+                      <p className="text-red-400 text-sm">{walletError}</p>
+                    )}
                     <button
                       type="button"
                       onClick={connect}
@@ -161,8 +184,8 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
 
               <button
                 onClick={handleCreateShare}
-                disabled={creating}
-                className="w-full px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-cyan-500/50"
+                disabled={creating || !walletAddress || !!walletError}
+                className="w-full px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-cyan-500/50 disabled:cursor-not-allowed"
               >
                 {creating ? 'Creating Your Link...' : 'Get My Share Link'}
               </button>
@@ -189,9 +212,10 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition"
+                    disabled={copying}
+                    className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-500/50 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
                   >
-                    Copy
+                    {copying ? 'Copying...' : 'Copy'}
                   </button>
                 </div>
               </div>

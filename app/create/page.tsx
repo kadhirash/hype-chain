@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
 import { CreateContentResponse } from '@/src/types/api';
+import { copyToClipboard } from '@/src/utils/clipboard';
+import { isValidWalletAddress, getWalletAddressError } from '@/src/utils/validation';
 
 export default function CreateContentPage() {
   const { address, isConnected, connect } = useWallet();
@@ -16,6 +18,8 @@ export default function CreateContentPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CreateContentResponse | null>(null);
   const [error, setError] = useState('');
+  const [copying, setCopying] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   // Auto-fill wallet address when connected
   useEffect(() => {
@@ -26,9 +30,19 @@ export default function CreateContentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate wallet address if not connected
+    if (!isConnected && !isValidWalletAddress(formData.walletAddress)) {
+      const error = getWalletAddressError(formData.walletAddress);
+      setWalletError(error);
+      toast.error(error || 'Please enter a valid wallet address');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setResult(null);
+    setWalletError(null);
 
     try {
       const response = await fetch('/api/content', {
@@ -55,10 +69,11 @@ export default function CreateContentPage() {
     }
   };
 
-  const handleCopyLink = () => {
-    if (result?.share?.share_url) {
-      navigator.clipboard.writeText(result.share.share_url);
-      toast.success('Link copied to clipboard!');
+  const handleCopyLink = async () => {
+    if (result?.share?.share_url && !copying) {
+      setCopying(true);
+      await copyToClipboard(result.share.share_url);
+      setCopying(false);
     }
   };
 
@@ -144,10 +159,20 @@ export default function CreateContentPage() {
                       id="walletAddress"
                       required
                       value={formData.walletAddress}
-                      onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, walletAddress: value });
+                        const error = getWalletAddressError(value);
+                        setWalletError(error);
+                      }}
+                      className={`w-full px-4 py-3 rounded-xl bg-white/10 border ${
+                        walletError ? 'border-red-500/50' : 'border-white/20'
+                      } text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent`}
                       placeholder="0x... or connect your wallet"
                     />
+                    {walletError && (
+                      <p className="text-red-400 text-sm">{walletError}</p>
+                    )}
                     <button
                       type="button"
                       onClick={connect}
