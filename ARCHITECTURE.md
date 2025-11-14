@@ -146,7 +146,7 @@ hype-chain/
 ### Animated Viral Tree
 - Hierarchical tree visualization of share chain
 - Hover effects: chains grow from parent to child
-- 20 chain links (⛓️) for deep connections
+- 20 chain links for deep connections
 - Group hover: parent hover lights up all children
 
 ### Real-time Data Streams
