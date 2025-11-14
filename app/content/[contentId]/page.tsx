@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
@@ -237,9 +237,166 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     return imageExtensions.test(url) || imageHosts.test(url);
   };
 
-  const renderTreeNode = (node: any, level: number = 0) => {
+  // Component to calculate dynamic chain height
+  const ChainLink = ({ parentRef, childRef, childIndex, totalChildren }: { parentRef: React.RefObject<HTMLDivElement>, childRef: React.RefObject<HTMLDivElement>, childIndex: number, totalChildren: number }) => {
+    const [chainHeight, setChainHeight] = useState<string>('1.5rem');
+    const [hoverHeight, setHoverHeight] = useState<string>('1.5rem');
+    const [chainCount, setChainCount] = useState<number>(4);
+    const chainContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const calculateHeight = () => {
+        if (parentRef.current && childRef.current) {
+          const parentRect = parentRef.current.getBoundingClientRect();
+          const childRect = childRef.current.getBoundingClientRect();
+          
+          // Calculate distance between parent bottom and child top
+          const distance = childRect.top - parentRect.bottom;
+          
+          // Add some spacing for the horizontal connector
+          const calculatedHeight = Math.max(1.5 * 16, distance - 8); // Minimum 1.5rem, subtract 8px for connector
+          const calculatedHeightRem = `${calculatedHeight / 16}rem`;
+          
+          setChainHeight(calculatedHeightRem);
+          
+          // For hover height, use the calculated height or a reasonable max
+          const hoverHeightPx = Math.min(calculatedHeight, 18 * 16); // Max 18rem
+          setHoverHeight(`${hoverHeightPx / 16}rem`);
+          
+          // Calculate chain count based on height (roughly 1 chain per 16px)
+          const count = Math.max(4, Math.ceil(calculatedHeight / 16));
+          setChainCount(Math.min(count, 30)); // Cap at 30 chains
+        }
+      };
+
+      // Wait for layout to complete before calculating
+      const timeoutId = setTimeout(() => {
+        calculateHeight();
+      }, 0);
+      
+      // Recalculate on window resize
+      window.addEventListener('resize', calculateHeight);
+      return () => {
+        clearTimeout(timeoutId);
+        window.removeEventListener('resize', calculateHeight);
+      };
+    }, [parentRef, childRef]);
+
+    useEffect(() => {
+      const parentCard = parentRef.current;
+      const childCard = childRef.current;
+      const chainContainer = chainContainerRef.current;
+      
+      if (!parentCard || !childCard || !chainContainer) return;
+
+      const handleParentHover = () => {
+        if (chainContainer) {
+          chainContainer.style.height = hoverHeight;
+        }
+      };
+      
+      const handleParentLeave = () => {
+        if (chainContainer) {
+          chainContainer.style.height = '0px';
+        }
+      };
+      
+      const handleChildHover = () => {
+        if (chainContainer) {
+          chainContainer.style.height = hoverHeight;
+        }
+      };
+      
+      const handleChildLeave = () => {
+        if (chainContainer) {
+          chainContainer.style.height = '0px';
+        }
+      };
+
+      parentCard.addEventListener('mouseenter', handleParentHover);
+      parentCard.addEventListener('mouseleave', handleParentLeave);
+      childCard.addEventListener('mouseenter', handleChildHover);
+      childCard.addEventListener('mouseleave', handleChildLeave);
+
+      return () => {
+        parentCard.removeEventListener('mouseenter', handleParentHover);
+        parentCard.removeEventListener('mouseleave', handleParentLeave);
+        childCard.removeEventListener('mouseenter', handleChildHover);
+        childCard.removeEventListener('mouseleave', handleChildLeave);
+      };
+    }, [parentRef, childRef, hoverHeight]);
+
     return (
-      <div key={node.id} className="relative group/parentcard">
+      <>
+        {/* Vertical line - hidden */}
+        <div 
+          className="absolute -left-6 bottom-full w-0.5 bg-transparent transition-all pointer-events-none" 
+          style={{ height: chainHeight }}
+        />
+        
+        {/* Horizontal line - hidden */}
+        <div className="absolute -left-6 top-2 w-6 h-0.5 bg-transparent transition-all pointer-events-none" />
+        
+        {/* Vertical chains - grow on parent hover OR this child's hover */}
+        <div 
+          ref={chainContainerRef}
+          className="absolute -left-7 bottom-full flex flex-col-reverse gap-0 overflow-hidden transition-all duration-500 h-0 pointer-events-none"
+        >
+          {Array.from({ length: chainCount }).map((_, i) => (
+            <div
+              key={i}
+              className="text-cyan-400/70 text-base leading-tight transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+              style={{
+                transitionDelay: `${i * 30}ms`,
+              }}
+            >
+              ⛓️
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  // Component for child node with ref
+  const ChildNodeWithRef = ({ child, childIndex, parentRef, level, totalChildren }: { child: any, childIndex: number, parentRef: React.RefObject<HTMLDivElement>, level: number, totalChildren: number }) => {
+    const childRef = useRef<HTMLDivElement>(null);
+    
+    return (
+      <div className="relative group/thischild" ref={childRef}>
+        <ChainLink 
+          parentRef={parentRef} 
+          childRef={childRef} 
+          childIndex={childIndex} 
+          totalChildren={totalChildren} 
+        />
+      
+        {/* Horizontal chains - grow on parent hover OR this child's hover */}
+        <div className="absolute -left-6 top-1 flex gap-0 overflow-hidden transition-all duration-500 w-0 group-hover/parentcard:w-6 group-hover/thischild:w-6 pointer-events-none">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div
+              key={i}
+              className="text-cyan-400/70 text-sm leading-none transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+              style={{
+                transitionDelay: `${childIndex === 1 ? 240 : 120}ms`,
+              }}
+            >
+              ⛓️
+            </div>
+          ))}
+        </div>
+        
+        <TreeNode node={child} level={level + 1} />
+      </div>
+    );
+  };
+
+  // TreeNode component - proper React component to use hooks
+  const TreeNode = ({ node, level = 0 }: { node: any, level?: number }) => {
+    const parentRef = useRef<HTMLDivElement>(null);
+    
+    return (
+      <div className="relative group/parentcard" ref={parentRef}>
         <div className="flex items-center gap-3 py-3">
           {level === 0 && (
             <div className="text-2xl transition-transform group-hover/parentcard:scale-125 group-hover/parentcard:rotate-12 duration-300">
@@ -305,56 +462,14 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
         {node.children && node.children.length > 0 && (
           <div className="ml-12 space-y-6 mt-6 relative">
             {node.children.map((child: any, childIndex: number) => (
-              <div key={child.id} className="relative group/thischild">
-                {/* Vertical line - hidden */}
-                <div 
-                  className="absolute -left-6 bottom-full w-0.5 bg-transparent transition-all pointer-events-none" 
-                  style={{ 
-                    height: `${childIndex === 0 ? '1.5rem' : childIndex === 1 ? '17rem' : '1.5rem'}`
-                  }}
-                />
-                
-                {/* Horizontal line - hidden */}
-                <div className="absolute -left-6 top-2 w-6 h-0.5 bg-transparent transition-all pointer-events-none" />
-                
-                {/* Vertical chains - grow on parent hover OR this child's hover */}
-                <div 
-                  className={`absolute -left-7 bottom-full flex flex-col-reverse gap-0 overflow-hidden transition-all duration-500 h-0 pointer-events-none ${
-                    childIndex === 0 ? 'group-hover/parentcard:h-6 group-hover/thischild:h-6' : 
-                    childIndex === 1 ? 'group-hover/parentcard:h-72 group-hover/thischild:h-72' : 
-                    'group-hover/parentcard:h-6 group-hover/thischild:h-6'
-                  }`}
-                >
-                  {Array.from({ length: childIndex === 1 ? 20 : 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="text-cyan-400/70 text-base leading-tight transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-                      style={{
-                        transitionDelay: `${i * 30}ms`,
-                      }}
-                    >
-                      ⛓️
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Horizontal chains - grow on parent hover OR this child's hover */}
-                <div className="absolute -left-6 top-1 flex gap-0 overflow-hidden transition-all duration-500 w-0 group-hover/parentcard:w-6 group-hover/thischild:w-6 pointer-events-none">
-                  {Array.from({ length: 2 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="text-cyan-400/70 text-sm leading-none transition-all duration-300 opacity-0 scale-50 group-hover/parentcard:opacity-100 group-hover/parentcard:scale-100 group-hover/thischild:opacity-100 group-hover/thischild:scale-100 group-hover/parentcard:text-cyan-300 group-hover/thischild:text-cyan-300 group-hover/parentcard:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] group-hover/thischild:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-                      style={{
-                        transitionDelay: `${childIndex === 1 ? 240 : 120}ms`,
-                      }}
-                    >
-                      ⛓️
-                    </div>
-                  ))}
-                </div>
-                
-                {renderTreeNode(child, level + 1)}
-              </div>
+              <ChildNodeWithRef 
+                key={child.id}
+                child={child}
+                childIndex={childIndex}
+                parentRef={parentRef}
+                level={level}
+                totalChildren={node.children.length}
+              />
             ))}
           </div>
         )}
@@ -715,7 +830,9 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
             )}
 
             <div className="overflow-x-auto">
-              {tree.tree.map((node: any) => renderTreeNode(node))}
+              {tree.tree.map((node: any) => (
+                <TreeNode key={node.id} node={node} level={0} />
+              ))}
             </div>
           </div>
         ) : (
