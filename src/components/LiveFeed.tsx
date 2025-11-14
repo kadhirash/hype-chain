@@ -28,7 +28,9 @@ export default function LiveFeed() {
       setActivities(data.activities || []);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Failed to load activities:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load activities:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -50,16 +52,17 @@ export default function LiveFeed() {
           // Reload activities when new event comes in
           loadActivities();
           setLastUpdated(new Date());
-        } else if (data.type === 'connected') {
-          console.log('Connected to real-time event stream');
         }
       } catch (err) {
-        console.error('Error parsing SSE message:', err);
+        // Silently handle parse errors
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error parsing SSE message:', err);
+        }
       }
     };
 
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
+    eventSource.onerror = () => {
+      // Close connection on error, will reconnect on component remount
       eventSource.close();
     };
 
