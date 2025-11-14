@@ -19,7 +19,7 @@ HypeChain tracks every share in a viral chain using smart contracts and distribu
 
 ## Somnia Data Streams Integration
 
-HypeChain leverages **Somnia Data Streams** for real-time viral tracking and analytics
+HypeChain leverages **Somnia Data Streams SDK** (`@somnia-chain/streams@^0.9.5`) for real-time viral tracking and analytics. The SDK enables true real-time event streaming from the Somnia blockchain via Server-Sent Events (SSE).
 
 ### How I Use Data Streams
 
@@ -43,12 +43,13 @@ export function subscribeToShareCreated(callback: (event: ShareCreatedEvent) => 
 }
 ```
 
-**3. Live Activity Feed**
+**3. Live Activity Feed with Server-Sent Events (SSE)**
 The explore page features a real-time activity feed powered by Data Streams:
-- Shows shares and engagements as they happen
-- Auto-refreshes every 5 seconds
-- Live timestamp with second-by-second counter
-- Proves real-time capabilities to users
+- **True real-time**: Uses Server-Sent Events (SSE) via EventSource for instant updates
+- **Zero-latency**: Events appear the moment they're emitted on-chain (no polling)
+- **Persistent connection**: Maintains open connection to `/api/streams/events` endpoint
+- **Live timestamp**: Second-by-second counter showing last update time
+- **Proves real-time**: Users see viral activity propagate instantly
 
 **4. Historical Event Querying**
 I query past events to build viral attribution trees:
@@ -100,9 +101,11 @@ export async function getContentEventHistory(contentId: string | number) {
 - Persistent sessions with localStorage
 
 ### Live Activity Feed
-- Real-time updates powered by Somnia Data Streams
-- Shows recent shares and engagements
-- Live timestamp with refresh counter
+- Real-time updates via Server-Sent Events (SSE) powered by Somnia Data Streams
+- Instant updates when blockchain events occur (zero-latency)
+- Persistent EventSource connection to event stream
+- Shows recent shares and engagements as they happen
+- Live timestamp tracking
 - Filters deleted content automatically
 
 ## Tech Stack
@@ -110,7 +113,7 @@ export async function getContentEventHistory(contentId: string | number) {
 - **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
 - **Backend**: Next.js API Routes, Supabase (PostgreSQL)
 - **Blockchain**: Somnia Testnet, Solidity, Hardhat
-- **Data Streams**: Somnia Data Streams SDK, ethers.js v6
+- **Real-Time**: Somnia Data Streams SDK (`@somnia-chain/streams@^0.9.5`), Server-Sent Events (SSE), ethers.js v6
 - **Testing**: Vitest, Hardhat tests
 
 ## Getting Started
@@ -202,7 +205,7 @@ npx hardhat test
 
 ## Live Demo
 
-**🚀 Live Site:** https://hype-chain.vercel.app/
+**Live Site:** https://hype-chain.vercel.app/
 
 Try it out:
 - Connect your MetaMask/Phantom wallet
