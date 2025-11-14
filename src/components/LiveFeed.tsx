@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import LoadingSpinner from './LoadingSpinner';
 
 type Activity = {
   type: 'share' | 'engagement';
@@ -114,15 +115,18 @@ export default function LiveFeed() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl p-8 border border-cyan-500/20">
+        <div className="flex items-center gap-3 mb-6">
           <div className="relative">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping" />
           </div>
           <h3 className="text-xl font-bold text-white">Live Activity</h3>
         </div>
-        <p className="text-gray-400 text-sm">Loading recent activity...</p>
+        <div className="flex flex-col items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+          <p className="text-gray-400 text-sm mt-4">Loading recent activity...</p>
+        </div>
       </div>
     );
   }
@@ -155,16 +159,21 @@ export default function LiveFeed() {
       </div>
 
       {activities.length === 0 ? (
-        <p className="text-gray-400 text-sm">No recent activity</p>
+        <div className="text-center py-12">
+          <div className="text-5xl mb-4 opacity-50">📭</div>
+          <p className="text-gray-400 text-sm">No recent activity</p>
+          <p className="text-gray-500 text-xs mt-2">Activity will appear here in real-time</p>
+        </div>
       ) : (
         <div className="space-y-3 force-scrollbar" style={{ height: '400px', overflowY: 'scroll' }}>
           {displayActivities.map((activity, index) => (
             <Link
               key={`${activity.type}-${activity.id}-${index}`}
               href={`/content/${activity.contentId}`}
-              className="block group"
+              className="block group animate-fade-in"
+              style={{ animationDelay: `${index * 30}ms` }}
             >
-              <div className="bg-black/30 hover:bg-black/50 rounded-lg p-4 border border-cyan-500/10 hover:border-cyan-500/30 transition-all">
+              <div className="bg-black/30 hover:bg-black/50 rounded-lg p-4 border border-cyan-500/10 hover:border-cyan-500/30 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/10">
                 <div className="flex items-start gap-3">
                   <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm mt-0.5 ${
                     activity.type === 'share' 

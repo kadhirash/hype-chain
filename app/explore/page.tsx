@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LiveFeed from '@/src/components/LiveFeed';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import ContentCardSkeleton from '@/src/components/ContentCardSkeleton';
 import { ContentListResponse } from '@/src/types/api';
 import { Content } from '@/src/lib/supabase';
 
@@ -37,8 +39,37 @@ export default function ExplorePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading viral content...</div>
+      <div className="min-h-screen bg-black">
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+          <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition mb-8 inline-block">
+            ← Back to Home
+          </Link>
+
+          <div className="mb-12 text-center">
+            <h1 className="text-5xl md:text-6xl font-black text-white mb-3">
+              Explore Viral Chains
+            </h1>
+            <p className="text-xl text-gray-300">
+              Discover trending content and see viral attribution in action
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Live Feed Sidebar */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="lg:sticky lg:top-4">
+                <LiveFeed />
+              </div>
+            </div>
+
+            {/* Content Grid Skeleton */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <ContentCardSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -64,17 +95,17 @@ export default function ExplorePage() {
             <p className="text-red-200 text-lg">{error}</p>
           </div>
         ) : content.length === 0 ? (
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-12 border border-white/20 text-center">
-            <div className="text-6xl mb-4">🎨</div>
-            <h3 className="text-3xl font-bold text-white mb-4">
+          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-3xl p-16 border border-cyan-500/20 text-center animate-fade-in">
+            <div className="text-7xl mb-6 animate-bounce">🎨</div>
+            <h3 className="text-4xl font-bold text-white mb-4">
               No Content Yet
             </h3>
-            <p className="text-xl text-gray-400 mb-8">
-              Be the first to create viral content!
+            <p className="text-xl text-gray-300 mb-10 max-w-md mx-auto">
+              Be the first to create viral content and start building your viral chain!
             </p>
             <Link
               href="/create"
-              className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-cyan-500/50"
+              className="inline-block px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-cyan-500/50 hover:scale-105"
             >
               Create Content
             </Link>
@@ -90,11 +121,12 @@ export default function ExplorePage() {
 
             {/* Content Grid */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {content.map((item) => (
+              {content.map((item, index) => (
               <Link
                 key={item.id}
                 href={`/content/${item.id}`}
-                className="group bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-200 hover:transform hover:scale-[1.02]"
+                className="group bg-gradient-to-br from-cyan-900/30 to-blue-900/20 backdrop-blur-xl rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20 animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 {/* Media Preview */}
                 <div className="aspect-video bg-gradient-to-br from-cyan-900/50 to-blue-900/30 relative overflow-hidden flex items-center justify-center">
