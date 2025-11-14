@@ -46,12 +46,12 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
-        <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition mb-4 inline-block">
+        <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition mb-8 inline-block">
           ← Back to Home
         </Link>
 
-        <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl md:text-6xl font-black text-white mb-3">
             Explore Viral Chains
           </h1>
           <p className="text-xl text-gray-300">

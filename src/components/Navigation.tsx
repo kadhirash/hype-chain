@@ -21,18 +21,20 @@ export default function Navigation() {
     <nav className="bg-black border-b border-cyan-500/20">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
-          {/* Logo / Brand */}
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="text-2xl md:text-3xl font-black text-white group-hover:scale-110 transition-transform">
-              Hype<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Chain</span>
-            </div>
-          </Link>
-
-          {/* Navigation Links - Hidden on mobile */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* Logo / Brand and Navigation Links - Grouped together */}
+          <div className="flex items-center" style={{ paddingLeft: '0.8rem' }}>
+            {/* Logo */}
+            <Link href="/" className="group flex-shrink-0 py-2.5">
+              <div className="text-2xl md:text-3xl font-black text-white group-hover:scale-110 transition-transform">
+                Hype<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Chain</span>
+              </div>
+            </Link>
+            
+            {/* Navigation Links - Hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-4" style={{ marginLeft: 'calc(-100% - 2px)', paddingLeft: '1.25rem' }}>
             <Link
               href="/explore"
-              className={`px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
+              className={`pr-5 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
                 isActive('/explore')
                   ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -108,8 +110,11 @@ export default function Navigation() {
             >
               Analytics
             </Link>
+            </div>
+          </div>
 
-            {/* Wallet Connection */}
+          {/* Desktop Wallet Connection - Only show on desktop */}
+          <div className="hidden lg:flex items-center">
             {isConnected && address ? (
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="px-4 py-2.5 bg-white/10 rounded-lg border border-cyan-500/30 text-cyan-300 font-mono text-sm whitespace-nowrap">
@@ -132,7 +137,7 @@ export default function Navigation() {
             )}
           </div>
 
-          {/* Mobile Wallet Connection */}
+          {/* Mobile Wallet Connection - Only show on mobile */}
           <div className="lg:hidden flex items-center gap-2">
             {isConnected && address ? (
               <>
