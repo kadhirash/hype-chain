@@ -6,6 +6,8 @@ import { useWallet } from '@/src/contexts/WalletContext';
 import { toast } from '@/src/components/Toast';
 import { ContentDetailResponse, ViralTreeResponse, ShareResponse, RevenueResponse } from '@/src/types/api';
 import { Content, Share } from '@/src/lib/supabase';
+import { copyToClipboard } from '@/src/utils/clipboard';
+import { isValidWalletAddress, getWalletAddressError } from '@/src/utils/validation';
 
 export default function ContentDetailPage({ params }: { params: Promise<{ contentId: string }> }) {
   const { address, isConnected, connect } = useWallet();
@@ -27,6 +29,9 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
   const [deleteMessage, setDeleteMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [deletingContent, setDeletingContent] = useState(false);
   const [confirmDeleteContent, setConfirmDeleteContent] = useState(false);
+  const [copyingPageUrl, setCopyingPageUrl] = useState(false);
+  const [copyingShareLink, setCopyingShareLink] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(p => {
@@ -66,10 +71,13 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     }
   };
 
-  const handleCopyPageUrl = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    toast.success('Page URL copied to clipboard!');
+  const handleCopyPageUrl = async () => {
+    if (!copyingPageUrl) {
+      setCopyingPageUrl(true);
+      const url = window.location.href;
+      await copyToClipboard(url);
+      setCopyingPageUrl(false);
+    }
   };
 
   const handleCreateShare = async () => {
@@ -77,6 +85,15 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
       toast.error('Please enter your wallet address');
       return;
     }
+    
+    if (!isValidWalletAddress(walletAddress)) {
+      const error = getWalletAddressError(walletAddress);
+      setWalletError(error);
+      toast.error(error || 'Please enter a valid wallet address');
+      return;
+    }
+    
+    setWalletError(null);
 
     setCreating(true);
     try {
@@ -113,10 +130,11 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
     }
   };
 
-  const handleCopyShareLink = () => {
-    if (newShare?.share_url) {
-      navigator.clipboard.writeText(newShare.share_url);
-      toast.success('Your share link copied to clipboard!');
+  const handleCopyShareLink = async () => {
+    if (newShare?.share_url && !copyingShareLink) {
+      setCopyingShareLink(true);
+      await copyToClipboard(newShare.share_url);
+      setCopyingShareLink(false);
     }
   };
 
@@ -636,9 +654,10 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                   />
                   <button
                     onClick={handleCopyPageUrl}
-                    className="px-6 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition"
+                    disabled={copyingPageUrl}
+                    className="px-6 py-2.5 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
                   >
-                    Copy
+                    {copyingPageUrl ? 'Copying...' : 'Copy'}
                   </button>
                 </div>
               </div>
@@ -654,12 +673,19 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                     <input
                       type="text"
                       value={walletAddress}
-                      onChange={(e) => setWalletAddress(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setWalletAddress(value);
+                        const error = getWalletAddressError(value);
+                        setWalletError(error);
+                      }}
                       placeholder="0x..."
                       readOnly={isConnected && !!address}
                       className={`flex-1 px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 focus:outline-none ${
                         isConnected && address
                           ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 cursor-not-allowed'
+                          : walletError
+                          ? 'bg-white/10 border-red-500/50 focus:ring-2 focus:ring-red-500'
                           : 'bg-white/10 border-white/20 focus:ring-2 focus:ring-green-500'
                       }`}
                     />
@@ -672,9 +698,12 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                       </button>
                     )}
                   </div>
+                  {walletError && (
+                    <p className="text-red-400 text-sm">{walletError}</p>
+                  )}
                   <button
                     onClick={handleCreateShare}
-                    disabled={creating || !walletAddress}
+                    disabled={creating || !walletAddress || !!walletError}
                     className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-cyan-600 hover:from-green-600 hover:to-cyan-700 disabled:from-gray-500 disabled:to-gray-600 text-white rounded-lg font-bold transition shadow-lg disabled:cursor-not-allowed"
                   >
                     {creating ? 'Creating Share...' : 'Get My Share Link'}
@@ -694,9 +723,10 @@ export default function ContentDetailPage({ params }: { params: Promise<{ conten
                 />
                 <button
                   onClick={handleCopyShareLink}
-                  className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
+                  disabled={copyingShareLink}
+                  className="px-6 py-2.5 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition"
                 >
-                  Copy Link
+                  {copyingShareLink ? 'Copying...' : 'Copy Link'}
                 </button>
               </div>
               <p className="text-gray-400 text-xs mt-2">
