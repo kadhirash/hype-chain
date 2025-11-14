@@ -35,12 +35,37 @@ export default function LiveFeed() {
   };
 
   useEffect(() => {
+    // Initial load
     loadActivities();
+
+    // Connect to SSE for real-time updates
+    const eventSource = new EventSource('/api/streams/events');
     
-    // Poll for new activities every 5 seconds
-    const interval = setInterval(loadActivities, 5000);
-    
-    return () => clearInterval(interval);
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle different event types
+        if (data.type === 'ShareCreated' || data.type === 'EngagementRecorded') {
+          // Reload activities when new event comes in
+          loadActivities();
+          setLastUpdated(new Date());
+        } else if (data.type === 'connected') {
+          console.log('Connected to real-time event stream');
+        }
+      } catch (err) {
+        console.error('Error parsing SSE message:', err);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   // Force re-render every second to update counter
